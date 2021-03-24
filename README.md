@@ -10,7 +10,7 @@ This package contains PyTorch-based implementations of a U-Net based segmentatio
 ## Installation
 A conda environment file is provided in the ./conda/ folder, which may be used as such:
 
->conda create env --file ./conda/rectangle.yml
+>conda env create --file ./conda/rectangle.yml
 >conda activate rectangle
 
 Once this is activated, the package may be installed using the *setup.py* file:
