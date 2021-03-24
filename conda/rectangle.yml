@@ -1,0 +1,13 @@
+name: rectangle
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+- python >= 3.6
+- setuptools > 42
+- pytorch
+- torchvision
+- numpy
+- scipy
+- h5py
+- matplotlib
