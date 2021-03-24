@@ -21,6 +21,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"RectAngle": "RectAngle"},
-    packages=setuptools.find_packages(where="RectAngle"),
+    packages=setuptools.find_packages(where="RectAngle/RectAngle"),
     python_requires=">=3.6",
 )
