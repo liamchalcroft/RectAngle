@@ -1,2 +1,2 @@
-from RectAngle import model
-from RectAngle import utils
+from RectAngle.RectAngle import model
+from RectAngle.RectAngle import utils
