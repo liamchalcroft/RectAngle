@@ -140,16 +140,15 @@ def KeepLargestComponent(image):
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
   """
-  # FIX: Currently sets whole image to zero...
   image_batch_ = torch.squeeze(image, dim=1)
   image_batch_ = image_batch_.detach().cpu().numpy()
   batch_size_ = image_batch_.shape[0]
 
-  for image_ in range(batch_size_):
-    image_ = np.squeeze(image_)
+  for ix_ in range(batch_size_):
+    image_ = np.squeeze(image_batch_[ix_,...])
     comp_, feat_ = measurements.label(image_)
     largest_ = (image_ == feat_).astype(int)
-    image[image_,...] = torch.tensor(largest_)
+    image[ix_,...] = torch.unsqueeze(torch.tensor(largest_),dim=0)
   
   return image
 
