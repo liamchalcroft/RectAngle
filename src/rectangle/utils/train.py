@@ -44,10 +44,11 @@ class Trainer(nn.Module):
                     self.model_ensemble.append(deepcopy(model))
 
         if opt == 'adam':
-            if self.ensemble: 
-                opt = [Adam(model.parameters()) for model in self.model_ensemble]
-            else:
-                opt = Adam(model.parameters())
+            # if self.ensemble: 
+            #     opt = [Adam(model.parameters()) for model in self.model_ensemble]
+            # else:
+            #     opt = Adam(model.parameters())
+            opt = Adam(model.parameters())
 
         self.opt = opt
 
