@@ -113,7 +113,7 @@ class Trainer(nn.Module):
                         self.opt.step()
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.mean(loss_epoch)
-                    if epoch % print_interval == 0:
+                    if epoch % self.print_interval == 0:
                         print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, mean_loss))
                     if epoch % self.val_interval == 0:
                         dice_epoch = []
@@ -137,7 +137,7 @@ class Trainer(nn.Module):
                                     'model',oname,'ensemble/{}'.format(i)))
                             else:
                                 early_ += 1
-                        if epoch % print_interval == 0:
+                        if epoch % self.print_interval == 0:
                             print('Mean Validation Dice: {}'.format(dice_metric))
                 print('Finished training of model #{}'.format(i))
                 loss_log_ensemble.append(loss_log)
@@ -150,6 +150,7 @@ class Trainer(nn.Module):
                 int(self.nb_epochs//self.val_interval)))
             dice_log[:] = np.nan
             early_ = 0
+            model = self.model
             for epoch in range(self.nb_epochs):
                 if self.early_stop:
                     if early_ == self.early_stop:
@@ -162,7 +163,7 @@ class Trainer(nn.Module):
                     if train_pre:
                         for aug in train_pre:
                             input = aug(input)
-                    pred = self.model(input)
+                    pred = model(input)
                     if train_post:
                         for aug in train_post:
                             pred = aug(pred)
@@ -171,7 +172,7 @@ class Trainer(nn.Module):
                     self.opt.step()
                     loss_epoch.append(loss_.item())
                 loss_log[epoch] = np.mean(loss_epoch)
-                if epoch % print_interval == 0:
+                if epoch % self.print_interval == 0:
                     print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, mean_loss))
                 if epoch % self.val_interval == 0:
                     dice_epoch = []
@@ -182,14 +183,14 @@ class Trainer(nn.Module):
                             if val_pre:
                                 for aug in val_pre:
                                     input = aug(input)
-                            pred = self.model(input)
+                            pred = model(input)
                             if val_post:
                                 for aug in val_post:
                                     pred = aug(pred)
                             dice_metric = self.metric(pred, label)
                             dice_epoch.append(1 - dice_metric.item())
                         dice_log[epoch] = np.mean(dice_epoch)
-                    if epoch % print_interval == 0:
+                    if epoch % self.print_interval == 0:
                         print('Mean Validation Dice: {}'.format(dice_metric))
                     if dice_log[epoch] > dice_log[epoch-1]:
                         early_ = 0
@@ -243,7 +244,7 @@ class Trainer(nn.Module):
 
         test = DataLoader(test_data, 1)
         dice_log = []
-        model.eval()
+        self.model.eval()
         with torch.no_grad():
             for i, (input, label) in enumerate(test):
                 input, label = input.to(self.device), label.to(self.device)
