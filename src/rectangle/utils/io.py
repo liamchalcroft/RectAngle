@@ -114,5 +114,5 @@ class H5DataLoader(torch.utils.data.Dataset):
           self.file['label_%04d_%03d_%02d' % (subj_ix, frame_ix, label_ix
             )][()].astype('float32')), dim=0) for label_ix in range(3)])
       label_mean = torch.mean(label_batch, dim=0)
-      label = torch.round(label_mean).astype(int)
+      label = torch.round(label_mean).int()
     return(image, label)
