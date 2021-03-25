@@ -74,8 +74,8 @@ class Trainer(nn.Module):
                 train_list.append(DataLoader(ConcatDataset(data_list[:i]+data_list[i+1:]), 
                 train_batch, train_shuffle))
         else:
-            train = DataLoader(train_data, train_batch, shuffle)
-            val = DataLoader(val_data, val_batch, shuffle)
+            train = DataLoader(train_data, train_batch, train_shuffle)
+            val = DataLoader(val_data, val_batch, val_shuffle)
 
         if not oname:
             oname = date.today()
