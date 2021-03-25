@@ -13,7 +13,7 @@ import numpy as np
 class Trainer(nn.Module):
     def __init__(self, model, nb_epochs=200, outdir='./logs',
      loss=DiceLoss(), metric=DiceLoss(), opt='adam',
-     print_interval=50, val_interval=50, device='cuda',
+     print_interval=50, val_interval=20, device='cuda',
      early_stop=10, ensemble=None):
 
         super().__init__()
@@ -85,7 +85,7 @@ class Trainer(nn.Module):
                 self.nb_epochs))
             loss_log_ensemble[:] = np.nan
             dice_log_ensemble = np.empty((len(self.model_ensemble),\
-                int(self.nb_epochs//self.val_interval)))
+                self.nb_epochs))
             dice_log_ensemble[:] = np.nan
             for i, model in enumerate(self.model_ensemble):
                 early_ = 0
@@ -131,7 +131,8 @@ class Trainer(nn.Module):
                                 dice_metric = self.metric(pred, label)
                                 dice_epoch.append(1 - dice_metric.item())
                             dice_log_ensemble[i,epoch] = np.mean(dice_epoch)
-                            if dice_log_ensemble[i,epoch] > dice_log_ensemble[i,epoch-1]:
+                        if epoch > self.val_interval:
+                            if dice_log_ensemble[i,epoch] > dice_log_ensemble[i,epoch-self.val_interval]:
                                 early_ = 0
                                 torch.save(model.state_dict(), path.join(self.outdir,\
                                     'model',oname,'ensemble/{}'.format(i)))
@@ -147,7 +148,7 @@ class Trainer(nn.Module):
             self.nb_epochs))
             loss_log[:] = np.nan
             dice_log = np.empty((1,\
-                int(self.nb_epochs//self.val_interval)))
+                self.nb_epochs))
             dice_log[:] = np.nan
             early_ = 0
             model = self.model
@@ -192,11 +193,12 @@ class Trainer(nn.Module):
                         dice_log[epoch] = np.mean(dice_epoch)
                     if epoch % self.print_interval == 0:
                         print('Mean Validation Dice: {}'.format(dice_log[epoch]))
-                    if dice_log[epoch] > dice_log[epoch-1]:
-                        early_ = 0
-                        torch.save(model.state_dict(), path.join(self.outdir,'model',oname))
-                    else:
-                        early_ += 1
+                    if epoch > self.val_interval:
+                        if dice_log[epoch] > dice_log[epoch-self.val_interval]:
+                            early_ = 0
+                            torch.save(model.state_dict(), path.join(self.outdir,'model',oname))
+                        else:
+                            early_ += 1
         print('\nTraining Complete')
 
         if self.ensemble:
