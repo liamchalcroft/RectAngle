@@ -61,6 +61,8 @@ class Trainer(nn.Module):
             val_list = []
             length = int(len(train_data)//self.ensemble)
             length_list = [length] * self.ensemble
+            if sum(length_list) != len(train_data):
+                length_list[0] += len(train_data) - sum(length_list)
             data_list = random_split(train_data, length_list)
             for i in range(self.ensemble):
                 list_k = data_list
