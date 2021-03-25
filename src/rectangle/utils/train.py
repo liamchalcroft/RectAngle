@@ -110,7 +110,7 @@ class Trainer(nn.Module):
                                 pred = aug(pred)
                         loss_ = self.loss(pred, label)
                         loss_.backward()
-                        optim.step()
+                        self.opt.step()
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.mean(loss_epoch)
                     if epoch % print_interval == 0:
@@ -168,7 +168,7 @@ class Trainer(nn.Module):
                             pred = aug(pred)
                     loss_ = self.loss(pred, label)
                     loss_.backward()
-                    optim.step()
+                    self.opt.step()
                     loss_epoch.append(loss_.item())
                 loss_log[epoch] = np.mean(loss_epoch)
                 if epoch % print_interval == 0:
