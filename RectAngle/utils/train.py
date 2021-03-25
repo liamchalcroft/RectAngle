@@ -4,6 +4,7 @@ from torch.optim import Adam
 from copy import deepcopy
 from os import path
 from datetime import date
+import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
 
