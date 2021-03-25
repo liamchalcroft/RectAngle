@@ -14,34 +14,34 @@ class Trainer(nn.Module):
      print_interval=50, val_interval=50, device='cuda',
      early_stop=10, ensemble=None):
 
-    self.model = model
-    self.train = train
-    self.val = val
-    self.nb_epochs
-    self.loss = loss
-    self.metric = metric
-    self.print_interval = print_interval
-    self.val_interval = val_interval
-    self.early_stop = early_stop
-    self.ensemble = ensemble
-    self.outdir = outdir
+        self.model = model
+        self.train = train
+        self.val = val
+        self.nb_epochs
+        self.loss = loss
+        self.metric = metric
+        self.print_interval = print_interval
+        self.val_interval = val_interval
+        self.early_stop = early_stop
+        self.ensemble = ensemble
+        self.outdir = outdir
 
-    if self.ensemble == 0:
-        self.ensemble = None
+        if self.ensemble == 0:
+            self.ensemble = None
 
-    if self.ensemble:
-        if len(model) != self.ensemble:
-            self.model_ensemble = []
-            for i in range(self.ensemble):
-                self.model_ensemble.append(deepcopy(model))
-        else:
-            self.model_ensemble = model
+        if self.ensemble:
+            if len(model) != self.ensemble:
+                self.model_ensemble = []
+                for i in range(self.ensemble):
+                    self.model_ensemble.append(deepcopy(model))
+            else:
+                self.model_ensemble = model
 
-    if opt == 'adam':
-        if self.ensemble: 
-            opt = [Adam(model.parameters()) for model in self.model_ensemble]
-        else:
-            opt = Adam(model.parameters())
+        if opt == 'adam':
+            if self.ensemble: 
+                opt = [Adam(model.parameters()) for model in self.model_ensemble]
+            else:
+                opt = Adam(model.parameters())
 
 
     # need to fix ensemble data - k-fold?
