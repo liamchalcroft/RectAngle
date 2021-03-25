@@ -131,7 +131,7 @@ class Trainer(nn.Module):
                                 dice_metric = self.metric(pred, label)
                                 dice_epoch.append(1 - dice_metric.item())
                             dice_log_ensemble[i,epoch] = np.mean(dice_epoch)
-                            if dice_log[epoch] > dice_log[epoch-1]:
+                            if dice_log_ensemble[i,epoch] > dice_log_ensemble[i,epoch-1]:
                                 early_ = 0
                                 torch.save(model.state_dict(), path.join(self.outdir,\
                                     'model',oname,'ensemble/{}'.format(i)))
