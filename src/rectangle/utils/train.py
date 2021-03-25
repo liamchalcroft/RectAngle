@@ -31,7 +31,7 @@ class Trainer(nn.Module):
             self.ensemble = None
 
         if self.ensemble:
-            if isinstance(self.model, 'list'):
+            if isinstance(self.model, list):
                 if len(self.model) == self.ensemble:
                     self.model_ensemble = self.model
                 else:
