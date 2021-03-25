@@ -130,7 +130,7 @@ class Trainer(nn.Module):
                                         pred = aug(pred)
                                 dice_metric = self.metric(pred, label)
                                 dice_epoch.append(1 - dice_metric.item())
-                            dice_log_ensemble[i,epoch] = np.mean(dice_epoch)
+                            dice_log_ensemble[i,int(epoch//self.val_interval)] = np.mean(dice_epoch)
                         if epoch > self.val_interval:
                             if dice_log_ensemble[i,int(epoch//self.val_interval)] > dice_log_ensemble[i,int(epoch//self.val_interval)-1]:
                                 early_ = 0
