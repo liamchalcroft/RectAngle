@@ -31,12 +31,15 @@ class Trainer(nn.Module):
             self.ensemble = None
 
         if self.ensemble:
-            if len(model) != self.ensemble:
+            if isinstance(self.model, 'list'):
+                if len(self.model) == self.ensemble:
+                    self.model_ensemble = self.model
+                else:
+                    raise ValueError('List of models given but shape does not match ensemble.')
+            else:
                 self.model_ensemble = []
                 for i in range(self.ensemble):
                     self.model_ensemble.append(deepcopy(model))
-            else:
-                self.model_ensemble = model
 
         if opt == 'adam':
             if self.ensemble: 
