@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 import numpy as np
+import random
 
 
 def train_val_test(file, ratio=(0.6, 0.2, 0.2)):
