@@ -131,7 +131,7 @@ class Trainer(nn.Module):
                                 dice_metric = self.metric(pred, label)
                                 dice_epoch.append(1 - dice_metric.item())
                             dice_log_ensemble[i,int(epoch//self.val_interval)] = np.mean(dice_epoch)
-                        if epoch > self.val_interval:
+                        if epoch >= self.val_interval:
                             if dice_log_ensemble[i,int(epoch//self.val_interval)] > dice_log_ensemble[i,int(epoch//self.val_interval)-1]:
                                 early_ = 0
                                 path_ = path.join(self.outdir,\
@@ -144,8 +144,6 @@ class Trainer(nn.Module):
                         if epoch % self.print_interval == 0:
                             print('Mean Validation Dice: {}'.format(dice_log_ensemble[i,int(epoch//self.val_interval)]))
                 print('Finished training of model #{}'.format(i))
-                loss_log_ensemble.append(loss_log)
-                dice_log_ensemble.append(dice_log)
         else:
             loss_log = np.empty((1,\
             self.nb_epochs))
@@ -196,7 +194,7 @@ class Trainer(nn.Module):
                         dice_log[epoch] = np.mean(dice_epoch)
                     if epoch % self.print_interval == 0:
                         print('Mean Validation Dice: {}'.format(dice_log[int(epoch//self.val_interval)]))
-                    if epoch > self.val_interval:
+                    if epoch >= self.val_interval:
                         if dice_log[int(epoch//self.val_interval)] > dice_log[int(epoch//self.val_interval)-1]:
                             early_ = 0
                             path_ = path.join(self.outdir,\
