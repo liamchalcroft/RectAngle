@@ -49,6 +49,8 @@ class Trainer(nn.Module):
             else:
                 opt = Adam(model.parameters())
 
+        self.opt = opt
+
 
     # need to fix ensemble data - k-fold?
     def train(self, train_data, val_data=None, oname=None, 
@@ -101,7 +103,7 @@ class Trainer(nn.Module):
                         if train_pre:
                             for aug in train_pre:
                                 input = aug(input)
-                        pred = self.model(input)
+                        pred = model(input)
                         if train_post:
                             for aug in train_post:
                                 pred = aug(pred)
@@ -121,7 +123,7 @@ class Trainer(nn.Module):
                                 if val_pre:
                                     for aug in val_pre:
                                         input = aug(input)
-                                pred = self.model(input)
+                                pred = model(input)
                                 if val_post:
                                     for aug in val_post:
                                         pred = aug(pred)
