@@ -1,5 +1,6 @@
 import torch
-from RectAngle.RectAngle.utils.metrics import DiceLoss
+from torch import nn
+from rectangle.utils.metrics import DiceLoss
 from torch.optim import Adam
 from copy import deepcopy
 from os import path
@@ -173,18 +174,18 @@ class Trainer(nn.Module):
 
         if self.ensemble:
             plt.figure(figsize=(8,6))
-            plt.plot(np.linspace(0,self.nb_epochs,nb_self.nb_epochs), \
+            plt.plot(np.linspace(0,self.nb_epochs,self.nb_epochs), \
                 np.mean(loss_log_ensemble, axis=0))
-            plt.fill_between(np.linspace(0,self.nb_epochs,nb_self.nb_epochs), \
+            plt.fill_between(np.linspace(0,self.nb_epochs,self.nb_epochs), \
                 np.mean(loss_log_ensemble, axis=0)+np.std(loss_log_ensemble, axis=0),\
-                    np.mean(loss_log_ensemble, axis=0)-np.std(loss_log_ensemble, axis=0),\
-                        alpha=0.3)
+                np.mean(loss_log_ensemble, axis=0)-np.std(loss_log_ensemble, axis=0),\
+                alpha=0.3)
             plt.plot(np.linspace(0,self.nb_epochs,\
-                self.nb_epochs//self.val_interval), np.mean(dice_log_ensemble, axis=0)
-            plt.fill_between(np.linspace(0,self.nb_epochs,nb_self.nb_epochs), \
+                self.nb_epochs//self.val_interval), np.mean(dice_log_ensemble, axis=0))
+            plt.fill_between(np.linspace(0,self.nb_epochs,self.nb_epochs), \
                 np.mean(dice_log_ensemble, axis=0)+np.std(dice_log_ensemble, axis=0),\
-                    np.mean(dice_log_ensemble, axis=0)-np.std(dice_log_ensemble, axis=0),\
-                        alpha=0.3)
+                np.mean(dice_log_ensemble, axis=0)-np.std(dice_log_ensemble, axis=0),\
+                alpha=0.3)
             plt.xlabel('Epoch #')
             plt.legend(['Train Loss', 'Validation Dice'])
             plt.savefig(path.join(outdir,'training/plots/{}.png'.format(oname)))
@@ -195,12 +196,12 @@ class Trainer(nn.Module):
                 dice_log_ensemble, delimiter=',')
         else:
             plt.figure(figsize=(8,6))
-            plt.plot(np.linspace(0,self.nb_epochs,nb_self.nb_epochs), loss_log)
+            plt.plot(np.linspace(0,self.nb_epochs,self.nb_epochs), loss_log)
             plt.plot(np.linspace(0,self.nb_epochs,\
                 self.nb_epochs//self.val_interval), dice_log)
             plt.xlabel('Epoch #')
             plt.legend(['Train Loss', 'Validation Dice'])
-            plt.savefig(path.join(outdir,'training/plots/{}.png'.format(oname))
+            plt.savefig(path.join(outdir,'training/plots/{}.png'.format(oname)))
 
             np.savetxt(path.join(outdir,'training/table/loss_{}.csv'.format(oname)),\
                 loss_log, delimiter=',')
@@ -212,7 +213,7 @@ class Trainer(nn.Module):
     test_pre=None, test_post=None):
         if not oname:
             oname = date.today()
-            oname = oname.strftime("%b-%d-%Y")):
+            oname = oname.strftime("%b-%d-%Y")
 
         test = DataLoader(test_data, 1)
         dice_log = []
