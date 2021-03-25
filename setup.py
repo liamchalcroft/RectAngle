@@ -21,4 +21,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "src"},
-    packages=[setuptools.find_packages(where="src"))
+    packages=[setuptools.find_packages(where="src")],
+    python_requires=">=3.6",
+)
