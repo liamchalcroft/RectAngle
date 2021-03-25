@@ -65,10 +65,9 @@ class Trainer(nn.Module):
                 length_list[0] += len(train_data) - sum(length_list)
             data_list = random_split(train_data, length_list)
             for i in range(self.ensemble):
-                list_k = data_list
-                val_list.append(DataLoader(list_k[i], val_batch, val_shuffle))
-                list_k.remove(list_k[i])
-                train_list.append(DataLoader(ConcatDataset(list_k), train_batch, train_shuffle))
+                val_list.append(DataLoader(data_list[i], val_batch, val_shuffle))
+                train_list.append(DataLoader(ConcatDataset(data_list[:i]+data_list[i+1:]), 
+                train_batch, train_shuffle))
         else:
             train = DataLoader(train_data, train_batch, shuffle)
             val = DataLoader(val_data, val_batch, shuffle)
