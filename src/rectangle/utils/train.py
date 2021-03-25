@@ -15,6 +15,8 @@ class Trainer(nn.Module):
      print_interval=50, val_interval=50, device='cuda',
      early_stop=10, ensemble=None):
 
+        super().__init__()
+
         self.model = model
         self.train = train
         self.val = val
