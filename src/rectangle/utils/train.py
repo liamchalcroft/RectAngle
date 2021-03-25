@@ -141,8 +141,6 @@ class Trainer(nn.Module):
                         if epoch % self.print_interval == 0:
                             print('Mean Validation Dice: {}'.format(dice_log_ensemble[i,epoch]))
                 print('Finished training of model #{}'.format(i))
-                loss_log_ensemble.append(loss_log)
-                dice_log_ensemble.append(dice_log)
         else:
             loss_log = np.empty((1,\
             self.nb_epochs))
