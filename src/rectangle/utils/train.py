@@ -216,7 +216,7 @@ class Trainer(nn.Module):
                 alpha=0.3)
             plt.plot(np.linspace(0,self.nb_epochs,\
                 self.nb_epochs//self.val_interval), np.mean(dice_log_ensemble, axis=0))
-            plt.fill_between(np.linspace(0,self.nb_epochs,self.nb_epochs), \
+            plt.fill_between(np.linspace(0,self.nb_epochs,int(self.nb_epochs//self.val_interval)), \
                 np.mean(dice_log_ensemble, axis=0)+np.std(dice_log_ensemble, axis=0),\
                 np.mean(dice_log_ensemble, axis=0)-np.std(dice_log_ensemble, axis=0),\
                 alpha=0.3)
@@ -232,7 +232,7 @@ class Trainer(nn.Module):
             plt.figure(figsize=(8,6))
             plt.plot(np.linspace(0,self.nb_epochs,self.nb_epochs), loss_log)
             plt.plot(np.linspace(0,self.nb_epochs,\
-                self.nb_epochs//self.val_interval), dice_log)
+                int(self.nb_epochs//self.val_interval)), dice_log)
             plt.xlabel('Epoch #')
             plt.legend(['Train Loss', 'Validation Dice'])
             plt.savefig(path.join(outdir,'training/plots/{}.png'.format(oname)))
