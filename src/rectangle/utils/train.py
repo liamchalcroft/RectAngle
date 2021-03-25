@@ -7,6 +7,7 @@ from os import path
 from datetime import date
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, random_split, ConcatDataset
+import numpy as np
 
 
 class Trainer(nn.Module):
