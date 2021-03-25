@@ -18,7 +18,7 @@ class Trainer(nn.Module):
         super().__init__()
 
         self.model = model
-        self.nb_epochs
+        self.nb_epochs = nb_epochs
         self.loss = loss
         self.metric = metric
         self.print_interval = print_interval
