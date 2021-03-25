@@ -110,7 +110,7 @@ class H5DataLoader(torch.utils.data.Dataset):
                                               label_ix
                                               )][()].astype(int)), dim=0)
     elif self.label == 'vote':
-      label_batch = torch.concat([torch.unsqueeze(torch.tensor(
+      label_batch = torch.cat([torch.unsqueeze(torch.tensor(
           self.file['label_%04d_%03d_%02d' % (subj_ix, frame_ix, label_ix
             )][()].astype(int)), dim=0) for label_ix in range(3)])
       label_mean = torch.mean(label_batch, dim=0)
