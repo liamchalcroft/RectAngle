@@ -27,6 +27,7 @@ class Trainer(nn.Module):
         self.early_stop = early_stop
         self.ensemble = ensemble
         self.outdir = outdir
+        self.device = device
 
         if self.ensemble == 0:
             self.ensemble = None
