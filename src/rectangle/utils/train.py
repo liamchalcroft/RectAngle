@@ -114,7 +114,7 @@ class Trainer(nn.Module):
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.mean(loss_epoch)
                     if epoch % self.print_interval == 0:
-                        print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, mean_loss))
+                        print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log_ensemble[i,epoch]))
                     if epoch % self.val_interval == 0:
                         dice_epoch = []
                         model.eval()
@@ -138,7 +138,7 @@ class Trainer(nn.Module):
                             else:
                                 early_ += 1
                         if epoch % self.print_interval == 0:
-                            print('Mean Validation Dice: {}'.format(dice_metric))
+                            print('Mean Validation Dice: {}'.format(dice_log_ensemble[i,epoch]))
                 print('Finished training of model #{}'.format(i))
                 loss_log_ensemble.append(loss_log)
                 dice_log_ensemble.append(dice_log)
@@ -173,7 +173,7 @@ class Trainer(nn.Module):
                     loss_epoch.append(loss_.item())
                 loss_log[epoch] = np.mean(loss_epoch)
                 if epoch % self.print_interval == 0:
-                    print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, mean_loss))
+                    print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log[epoch]))
                 if epoch % self.val_interval == 0:
                     dice_epoch = []
                     model.eval()
@@ -191,7 +191,7 @@ class Trainer(nn.Module):
                             dice_epoch.append(1 - dice_metric.item())
                         dice_log[epoch] = np.mean(dice_epoch)
                     if epoch % self.print_interval == 0:
-                        print('Mean Validation Dice: {}'.format(dice_metric))
+                        print('Mean Validation Dice: {}'.format(dice_log[epoch]))
                     if dice_log[epoch] > dice_log[epoch-1]:
                         early_ = 0
                         torch.save(model.state_dict(), path.join(self.outdir,'model',oname))
