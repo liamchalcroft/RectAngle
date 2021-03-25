@@ -3,7 +3,7 @@ from torch import nn
 from rectangle.utils.metrics import DiceLoss
 from torch.optim import Adam
 from copy import deepcopy
-from os import path
+from os import path, makedirs
 from datetime import date
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, random_split, ConcatDataset
@@ -13,7 +13,7 @@ import numpy as np
 class Trainer(nn.Module):
     def __init__(self, model, nb_epochs=200, outdir='./logs',
      loss=DiceLoss(), metric=DiceLoss(), opt='adam',
-     print_interval=50, val_interval=20, device='cuda',
+     print_interval=50, val_interval=50, device='cuda',
      early_stop=10, ensemble=None):
 
         super().__init__()
@@ -85,7 +85,7 @@ class Trainer(nn.Module):
                 self.nb_epochs))
             loss_log_ensemble[:] = np.nan
             dice_log_ensemble = np.empty((len(self.model_ensemble),\
-                self.nb_epochs))
+                int(self.nb_epochs//self.val_interval)))
             dice_log_ensemble[:] = np.nan
             for i, model in enumerate(self.model_ensemble):
                 early_ = 0
@@ -132,21 +132,26 @@ class Trainer(nn.Module):
                                 dice_epoch.append(1 - dice_metric.item())
                             dice_log_ensemble[i,epoch] = np.mean(dice_epoch)
                         if epoch > self.val_interval:
-                            if dice_log_ensemble[i,epoch] > dice_log_ensemble[i,epoch-self.val_interval]:
+                            if dice_log_ensemble[i,int(epoch//self.val_interval)] > dice_log_ensemble[i,int(epoch//self.val_interval)-1]:
                                 early_ = 0
-                                torch.save(model.state_dict(), path.join(self.outdir,\
-                                    'model',oname,'ensemble/{}'.format(i)))
+                                path_ = path.join(self.outdir,\
+                                    'model',oname,'ensemble/model_{}'.format(i))
+                                if not path.exists(path_):
+                                    makedirs(path_)
+                                torch.save(model.state_dict(), path.join(path_,'{}.pth'.format(epoch)))
                             else:
                                 early_ += 1
                         if epoch % self.print_interval == 0:
-                            print('Mean Validation Dice: {}'.format(dice_log_ensemble[i,epoch]))
+                            print('Mean Validation Dice: {}'.format(dice_log_ensemble[i,int(epoch//self.val_interval)]))
                 print('Finished training of model #{}'.format(i))
+                loss_log_ensemble.append(loss_log)
+                dice_log_ensemble.append(dice_log)
         else:
             loss_log = np.empty((1,\
             self.nb_epochs))
             loss_log[:] = np.nan
             dice_log = np.empty((1,\
-                self.nb_epochs))
+                int(self.nb_epochs//self.val_interval)))
             dice_log[:] = np.nan
             early_ = 0
             model = self.model
@@ -190,11 +195,15 @@ class Trainer(nn.Module):
                             dice_epoch.append(1 - dice_metric.item())
                         dice_log[epoch] = np.mean(dice_epoch)
                     if epoch % self.print_interval == 0:
-                        print('Mean Validation Dice: {}'.format(dice_log[epoch]))
+                        print('Mean Validation Dice: {}'.format(dice_log[int(epoch//self.val_interval)]))
                     if epoch > self.val_interval:
-                        if dice_log[epoch] > dice_log[epoch-self.val_interval]:
+                        if dice_log[int(epoch//self.val_interval)] > dice_log[int(epoch//self.val_interval)-1]:
                             early_ = 0
-                            torch.save(model.state_dict(), path.join(self.outdir,'model',oname))
+                            path_ = path.join(self.outdir,\
+                                'model',oname)
+                            if not path.exists(path_):
+                                makedirs(path_)
+                            torch.save(model.state_dict(), path.join(path_,'{}.pth'.format(epoch)))
                         else:
                             early_ += 1
         print('\nTraining Complete')
