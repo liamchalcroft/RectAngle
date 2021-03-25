@@ -48,7 +48,7 @@ class Trainer(nn.Module):
     # need to fix ensemble data - k-fold?
     def train(self, train_data, val_data=None, oname=None, 
         train_pre=None, train_post=None, train_batch=64, train_shuffle=True,
-        val_pre=None, val_post=None, val_batch=64, val_shuffle=True):
+        val_pre=None, val_post=None, val_batch=8, val_shuffle=True):
 
         if self.ensemble:
             if val_data:
@@ -61,12 +61,12 @@ class Trainer(nn.Module):
             data_list = random_split(train_data, length_list)
             for i in range(self.ensemble):
                 list_k = data_list
-                val_list.append(list_k[i])
+                val_list.append(DataLoader(list_k[i], val_batch, val_shuffle))
                 list_k.remove(list_k[i])
-                train_list.append(ConcatDataset(list_k))
+                train_list.append(DataLoader(ConcatDataset(list_k), train_batch, train_shuffle))
         else:
             train = DataLoader(train_data, train_batch, shuffle)
-            val = DataLoader(val_data, train_batch, shuffle)
+            val = DataLoader(val_data, val_batch, shuffle)
 
         if not oname:
             oname = date.today()
