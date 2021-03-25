@@ -89,6 +89,7 @@ class H5DataLoader(torch.utils.data.Dataset):
       num_frames.append(int(frames[-1]))
 
     self.num_frames = num_frames
+    self.label = label
 
   def __len__(self):
         return self.num_subjects
@@ -101,9 +102,16 @@ class H5DataLoader(torch.utils.data.Dataset):
         self.file['frame_%04d_%03d' % (subj_ix, 
                                        frame_ix
                                        )][()].astype('float32')), dim=0)
-    label = torch.unsqueeze(torch.tensor(
-        self.file['label_%04d_%03d_%02d' % (subj_ix, 
-                                            frame_ix, 
-                                            label_ix
-                                            )][()].astype(int)), dim=0)
+    if self.label == 'random':                                
+      label = torch.unsqueeze(torch.tensor(
+          self.file['label_%04d_%03d_%02d' % (subj_ix, 
+                                              frame_ix, 
+                                              label_ix
+                                              )][()].astype(int)), dim=0)
+    elif self.label == 'vote':
+      label_batch = torch.concat([torch.unsqueeze(torch.tensor(
+          self.file['label_%04d_%03d_%02d' % (subj_ix, frame_ix, label_ix
+            )][()].astype(int)), dim=0) for label_ix in range(3)])
+      label_mean = torch.mean(label_batch, dim=0)
+      label = torch.round(label_mean).astype(int)
     return(image, label)
