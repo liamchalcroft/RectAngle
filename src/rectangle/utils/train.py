@@ -6,7 +6,7 @@ from copy import deepcopy
 from os import path
 from datetime import date
 import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split, ConcatDataset
 
 
 class Trainer(nn.Module):
@@ -46,12 +46,27 @@ class Trainer(nn.Module):
 
 
     # need to fix ensemble data - k-fold?
-    def train(self, train_data, val_data, oname=None, 
+    def train(self, train_data, val_data=None, oname=None, 
         train_pre=None, train_post=None, train_batch=64, train_shuffle=True,
         val_pre=None, val_post=None, val_batch=64, val_shuffle=True):
 
-        train = DataLoader(train_data, train_batch, shuffle)
-        val = DataLoader(val_data, train_batch, shuffle)
+        if self.ensemble:
+            if val_data:
+                print('Ensemble uses K-fold cross-val and generates\
+                    val data - val_data input will be ignored.')
+            train_list = []
+            val_list = []
+            length = int(len(train_data)//self.ensemble)
+            length_list = [length] * self.ensemble
+            data_list = random_split(train_data, length_list)
+            for i in range(self.ensemble):
+                list_k = data_list
+                val_list.append(list_k[i])
+                list_k.remove(list_k[i])
+                train_list.append(ConcatDataset(list_k))
+        else:
+            train = DataLoader(train_data, train_batch, shuffle)
+            val = DataLoader(val_data, train_batch, shuffle)
 
         if not oname:
             oname = date.today()
@@ -65,6 +80,8 @@ class Trainer(nn.Module):
             dice_log_ensemble[:] = np.nan
             for i, model in enumerate(self.model_ensemble):
                 early_ = 0
+                train = train_list[i]
+                val = val_list[i]
                 print('Beginning training of model #{}'.format(i))
                 for epoch in range(self.nb_epochs):
                     if self.early_stop:
