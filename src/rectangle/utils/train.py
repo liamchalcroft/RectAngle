@@ -18,8 +18,6 @@ class Trainer(nn.Module):
         super().__init__()
 
         self.model = model
-        self.train = train
-        self.val = val
         self.nb_epochs
         self.loss = loss
         self.metric = metric
