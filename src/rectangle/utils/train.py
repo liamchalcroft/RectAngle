@@ -145,11 +145,9 @@ class Trainer(nn.Module):
                             print('Mean Validation Dice: {}'.format(dice_log_ensemble[i,int(epoch//self.val_interval)]))
                 print('Finished training of model #{}'.format(i))
         else:
-            loss_log = np.empty((1,\
-            self.nb_epochs))
+            loss_log = np.empty(self.nb_epochs)
             loss_log[:] = np.nan
-            dice_log = np.empty((1,\
-                int(self.nb_epochs//self.val_interval)))
+            dice_log = np.empty(int(self.nb_epochs//self.val_interval))
             dice_log[:] = np.nan
             early_ = 0
             model = self.model
