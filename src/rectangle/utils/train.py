@@ -291,6 +291,7 @@ class Trainer(nn.Module):
                 label_img = label_img[0,...]
 
                 plt.figure()
+                plt.axis('off')
                 plt.subplot(131)
                 plt.imshow(input_img, cmap='gray')
                 plt.title('Image')
@@ -300,10 +301,19 @@ class Trainer(nn.Module):
                 plt.subplot(133)
                 plt.imshow(label_img, cmap='gray')
                 plt.title('Ground Truth')
-                plt.savefig(path.join(self.outdir,'testing/plot/{}_{}.png'.format(i, oname)))
+
+                path_ = path.join(self.outdir,\
+                                'testing/plots')
+                if not path.exists(path_):
+                    makedirs(path_)
+                plt.savefig(path.join(self.outdir, path_, 'pred{}_{}.png'.format(i, oname)))
 
         dice_log = np.array(dice_log)
-        np.savetxt(path.join(self.outdir,'testing/table/dice_{}.csv'.format(oname)),\
+        path_ = path.join(self.outdir,\
+                                'testing/table')
+        if not path.exists(path_):
+            makedirs(path_)
+        np.savetxt(path.join(self.outdir, path_, 'dice_{}.csv'.format(oname)),\
                 dice_log, delimiter=',')
 
         print('Testing complete')
