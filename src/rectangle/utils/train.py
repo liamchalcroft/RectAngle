@@ -292,15 +292,15 @@ class Trainer(nn.Module):
 
                 plt.figure()
                 plt.subplot(131)
-                plt.imshow(input_img, cmap='gray')
+                plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
                 plt.axis('off')
                 plt.title('Image')
                 plt.subplot(132)
-                plt.imshow(pred_img, cmap='gray')
+                plt.imshow(pred_img, cmap='gray', vmin=0, vmax=1)
                 plt.axis('off')
                 plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
                 plt.subplot(133)
-                plt.imshow(label_img, cmap='gray')
+                plt.imshow(label_img, cmap='gray', vmin=0, vmax=1)
                 plt.axis('off')
                 plt.title('Ground Truth')
 
