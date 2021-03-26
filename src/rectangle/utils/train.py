@@ -291,15 +291,17 @@ class Trainer(nn.Module):
                 label_img = label_img[0,...]
 
                 plt.figure()
-                plt.axis('off')
                 plt.subplot(131)
                 plt.imshow(input_img, cmap='gray')
+                plt.axis('off')
                 plt.title('Image')
                 plt.subplot(132)
                 plt.imshow(pred_img, cmap='gray')
+                plt.axis('off')
                 plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
                 plt.subplot(133)
                 plt.imshow(label_img, cmap='gray')
+                plt.axis('off')
                 plt.title('Ground Truth')
 
                 path_ = path.join(self.outdir,\
