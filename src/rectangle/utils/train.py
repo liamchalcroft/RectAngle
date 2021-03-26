@@ -189,7 +189,7 @@ class Trainer(nn.Module):
                                     pred = aug(pred)
                             dice_metric = self.metric(pred, label)
                             dice_epoch.append(1 - dice_metric.item())
-                        dice_log[epoch] = np.mean(dice_epoch)
+                        dice_log[int(epoch//self.val_interval)] = np.mean(dice_epoch)
                     if epoch % self.print_interval == 0:
                         print('Mean Validation Dice: {}'.format(dice_log[int(epoch//self.val_interval)]))
                     if epoch >= self.val_interval:
