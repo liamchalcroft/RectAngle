@@ -306,14 +306,14 @@ class Trainer(nn.Module):
                                 'testing/plots')
                 if not path.exists(path_):
                     makedirs(path_)
-                plt.savefig(path.join(self.outdir, path_, 'pred{}_{}.png'.format(i, oname)))
+                plt.savefig(path.join(path_, 'pred{}_{}.png'.format(i, oname)))
 
         dice_log = np.array(dice_log)
         path_ = path.join(self.outdir,\
                                 'testing/table')
         if not path.exists(path_):
             makedirs(path_)
-        np.savetxt(path.join(self.outdir, path_, 'dice_{}.csv'.format(oname)),\
+        np.savetxt(path.join(path_, 'dice_{}.csv'.format(oname)),\
                 dice_log, delimiter=',')
 
         print('Testing complete')
