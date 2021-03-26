@@ -222,11 +222,18 @@ class Trainer(nn.Module):
                 alpha=0.3)
             plt.xlabel('Epoch #')
             plt.legend(['Train Loss', 'Validation Dice'])
-            plt.savefig(path.join(self.outdir,'training/plots/{}.png'.format(oname)))
-
-            np.savetxt(path.join(self.outdir,'training/table/loss_{}.csv'.format(oname)),\
+            path_ = path.join(self.outdir,\
+                                'training/plots')
+            if not path.exists(path_):
+                makedirs(path_)
+            plt.savefig(path.join(path_, '{}.png'.format(oname)))
+            path_ = path.join(self.outdir,\
+                                'training/table')
+            if not path.exists(path_):
+                makedirs(path_)
+            np.savetxt(path.join(path_, 'loss_{}.csv'.format(oname)),\
                 loss_log_ensemble, delimiter=',')
-            np.savetxt(path.join(self.outdir,'training/table/dice_{}.csv'.format(oname)),\
+            np.savetxt(path.join(path_, 'dice_{}.csv'.format(oname)),\
                 dice_log_ensemble, delimiter=',')
         else:
             plt.figure(figsize=(8,6))
@@ -235,11 +242,18 @@ class Trainer(nn.Module):
                 int(self.nb_epochs//self.val_interval)), dice_log)
             plt.xlabel('Epoch #')
             plt.legend(['Train Loss', 'Validation Dice'])
-            plt.savefig(path.join(self.outdir,'training/plots/{}.png'.format(oname)))
-
-            np.savetxt(path.join(self.outdir,'training/table/loss_{}.csv'.format(oname)),\
+            path_ = path.join(self.outdir,\
+                                'training/plots')
+            if not path.exists(path_):
+                makedirs(path_)
+            plt.savefig(path.join(path_, '{}.png'.format(oname)))
+            path_ = path.join(self.outdir,\
+                                'training/table')
+            if not path.exists(path_):
+                makedirs(path_)
+            np.savetxt(path.join(path_, 'loss_{}.csv'.format(oname)),\
                 loss_log, delimiter=',')
-            np.savetxt(path.join(self.outdir,'training/table/dice_{}.csv'.format(oname)),\
+            np.savetxt(path.join(path_, 'dice_{}.csv'.format(oname)),\
                 dice_log, delimiter=',')
 
 
