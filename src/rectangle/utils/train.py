@@ -296,11 +296,11 @@ class Trainer(nn.Module):
                 plt.title('Image')
                 plt.subplot(132)
                 plt.imshow(pred_img, cmap='gray')
-                plt.title('Prediction (DSC={:.2f}'.format(dice_log[i]))
-                plt.subplot(131)
+                plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
+                plt.subplot(133)
                 plt.imshow(label_img, cmap='gray')
                 plt.title('Ground Truth')
-                plt.savefig(path.join(self.outdir,'testing/plot/{}_{}.csv'.format(i, oname)))
+                plt.savefig(path.join(self.outdir,'testing/plot/{}_{}.png'.format(i, oname)))
 
         dice_log = np.array(dice_log)
         np.savetxt(path.join(self.outdir,'testing/table/dice_{}.csv'.format(oname)),\
