@@ -296,7 +296,7 @@ class Trainer(nn.Module):
                 plt.title('Image')
                 plt.subplot(132)
                 plt.imshow(pred_img, cmap='gray')
-                plt.title('Prediction')
+                plt.title('Prediction (DSC={:.2f}'.format(dice_log[i]))
                 plt.subplot(131)
                 plt.imshow(label_img, cmap='gray')
                 plt.title('Ground Truth')
