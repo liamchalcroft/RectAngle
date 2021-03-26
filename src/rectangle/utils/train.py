@@ -288,7 +288,7 @@ class Trainer(nn.Module):
 
                 input_img = input_img[0,0,...]
                 pred_img = pred_img[0,0,...]
-                label_img = label_img[0,0,...]
+                label_img = label_img[0,...]
 
                 plt.figure()
                 plt.subplot(131)
