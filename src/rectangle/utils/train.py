@@ -292,7 +292,7 @@ class Trainer(nn.Module):
 
                 plt.figure()
                 plt.subplot(131)
-                plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
+                plt.imshow(input_img, cmap='gray')
                 plt.axis('off')
                 plt.title('Image')
                 plt.subplot(132)
