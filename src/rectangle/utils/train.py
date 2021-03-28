@@ -44,11 +44,11 @@ class Trainer(nn.Module):
                     self.model_ensemble.append(deepcopy(model))
 
         if opt == 'adam':
-            # if self.ensemble: 
-            #     opt = [Adam(model.parameters()) for model in self.model_ensemble]
-            # else:
-            #     opt = Adam(model.parameters())
-            opt = Adam(model.parameters())
+            if self.ensemble: 
+                opt = [Adam(model.parameters()) for model in self.model_ensemble]
+            else:
+                opt = Adam(model.parameters())
+            # opt = Adam(model.parameters())
 
         self.opt = opt
 
@@ -91,6 +91,7 @@ class Trainer(nn.Module):
                 early_ = 0
                 train = train_list[i]
                 val = val_list[i]
+                opt_ = self.opt[i]
                 print('Beginning training of model #{}'.format(i))
                 for epoch in range(self.nb_epochs):
                     if self.early_stop:
@@ -100,7 +101,7 @@ class Trainer(nn.Module):
                     model.train()
                     for step, (input, label) in enumerate(train):
                         input, label = input.to(self.device), label.to(self.device)
-                        self.opt.zero_grad()
+                        opt_.zero_grad()
                         if train_pre:
                             for aug in train_pre:
                                 input = aug(input)
@@ -110,7 +111,7 @@ class Trainer(nn.Module):
                                 pred = aug(pred)
                         loss_ = self.loss(pred, label)
                         loss_.backward()
-                        self.opt.step()
+                        opt_.step()
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.mean(loss_epoch)
                     if epoch % self.print_interval == 0:
