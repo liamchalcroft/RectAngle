@@ -286,9 +286,9 @@ class Trainer(nn.Module):
                 pred_img = pred.detach().cpu().numpy()
                 label_img = label.detach().cpu().numpy()
 
-                input_img = input_img[0,0,...]
-                pred_img = pred_img[0,0,...]
-                label_img = label_img[0,...]
+                input_img = np.squeeze(input_img)
+                pred_img = np.squeeze(pred_img)
+                label_img = np.squeeze(label_img)
 
                 plt.figure()
                 plt.subplot(131)
