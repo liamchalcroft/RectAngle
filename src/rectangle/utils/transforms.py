@@ -19,7 +19,7 @@ import numpy as np
 #     - Keep-largest-connected-component
 
 
-class z_score(nn.Module):
+class z_score(object):
   """ Z-Score normalisation of image. Applied image-wise (not batch-wise) such
   that each image has a mean of 0 and standard deviation of 1.
   Input arguments:
@@ -28,7 +28,7 @@ class z_score(nn.Module):
   def __init__(self):
     super().__init__()
 
-  def forward(self, image):
+  def __call__(self, image):
     batch_ = image.shape[0]
     for batch_iter_ in range(batch_):
       image[batch_iter_,...] = (image[batch_iter_,...] - \
@@ -51,7 +51,7 @@ class z_score(nn.Module):
 #   return image
 
 
-class Affine(nn.Module):
+class Affine(object):
   """ Affine augmentation of image. Wrapper for torchvision RandomAffine.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
@@ -78,7 +78,7 @@ class Affine(nn.Module):
     self.scale = scale
     self.shear = shear
 
-  def forward(self, image):
+  def __call__(self, image):
     rand_ = random.uniform(0,1)
     if rand_ < self.prob:
       RandAffine_ = RandomAffine(degrees=self.degrees, translate=(self.translate,self.translate),
@@ -114,7 +114,7 @@ class Affine(nn.Module):
 #   return image
 
 
-class SpeckleNoise(nn.Module):
+class SpeckleNoise(object):
   """ Noise augmentation of image. Distribution scaled to image so 
   normalisation not essential.
   Input arguments:
@@ -138,7 +138,7 @@ class SpeckleNoise(nn.Module):
     self.sigma = sigma
     self.prob = prob
 
-  def forward(self, image):
+  def __call__(self, image):
     if image.is_cuda:
       device = torch.device('cuda')
     else:
@@ -200,7 +200,7 @@ class SpeckleNoise(nn.Module):
 #   return image
   
 
-class Smooth(nn.Module): 
+class Smooth(object): 
   """ Spatial smoothing of image. Currently only Gaussian smoothing.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
@@ -214,7 +214,7 @@ class Smooth(nn.Module):
     self.sigma = sigma
     self.prob = prob
 
-  def forward(self, image):
+  def __call__(self, image):
     # Ideally add Savitzky-Golay filter instead of Gauss
     if image.is_cuda:
       device = torch.device('cuda')
@@ -258,7 +258,7 @@ class Smooth(nn.Module):
 #   return image
 
 
-class Flip(nn.Module): 
+class Flip(object): 
   def __init__(self, prob=0.7):
     """ Randomly flip image in vertical axis (left and right)
     Input arguments:
@@ -269,7 +269,7 @@ class Flip(nn.Module):
     super().__init__()
     self.prob = prob
     
-    def forward(self, image):
+    def __call__(self, image):
       rand_ = random.uniform(0,1)
       if rand_ < self.prob:
         image = torch.fliplr(image)
@@ -289,7 +289,7 @@ class Flip(nn.Module):
 #   return image
 
 
-class KeepLargestComponent(nn.Module):
+class KeepLargestComponent(object):
   """ Remove all regions of label except largest connected component.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
@@ -297,7 +297,7 @@ class KeepLargestComponent(nn.Module):
   def __init__(self):
     super().__init__()
 
-  def forward(self, image):
+  def __call__(self, image):
     if image.is_cuda:
       device = torch.device('cuda')
     else:
@@ -333,7 +333,7 @@ class KeepLargestComponent(nn.Module):
 #   return image
 
 
-class Binary(nn.Module):
+class Binary(object):
   """ Convert float tensor to binary based on threshold value.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
@@ -345,7 +345,7 @@ class Binary(nn.Module):
     super().__init__()
     self.threshold = threshold
 
-  def forward(self, image):
+  def __call__(self, image):
     return (image > self.threshold).int()
 
 
