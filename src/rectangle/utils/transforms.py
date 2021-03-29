@@ -139,10 +139,14 @@ class SpeckleNoise(nn.Module):
     self.prob = prob
 
   def forward(self, image):
+    if image.is_cuda:
+      device = torch.device('cuda')
+    else:
+      device = torch.device('cpu')
     rand_ = random.uniform(0,1)
     if rand_ < self.prob:
       max = torch.amax(image, dim=(1,2,3))
-      noise = torch.randn(image.shape)
+      noise = torch.randn(image.shape).to(device)
 
       for i, max_ in enumerate(max):
         mean_ = max_ * self.mean
@@ -212,17 +216,21 @@ class Smooth(nn.Module):
 
   def forward(self, image):
     # Ideally add Savitzky-Golay filter instead of Gauss
+    if image.is_cuda:
+      device = torch.device('cuda')
+    else:
+      device = torch.device('cpu')
     rand_ = random.uniform(0,1)
     if rand_ < self.prob:
-      max = torch.amax(image, dim=(1,2,3))
-      noise = torch.randn(image.shape)
+      max = torch.amax(image, dim=(1,2,3)).to(device)
+      noise = torch.randn(image.shape).to(device)
 
       for i, max_ in enumerate(max):
         sigma_ = max_ * self.sigma
-        image_ = torch.squeeze(image[i,0,...])
+        image_ = torch.squeeze(image[i,0,...]).to(device)
         image_ = image_.detach().cpu().numpy()
         image_smooth_ = gaussian_filter(image_, sigma_)
-        image[i,0,...] = torch.tensor(image_smooth_)
+        image[i,0,...] = torch.tensor(image_smooth_).to(device)
     return image
 
 
@@ -290,7 +298,11 @@ class KeepLargestComponent(nn.Module):
     super().__init__()
 
   def forward(self, image):
-    image_batch_ = torch.squeeze(image, dim=1)
+    if image.is_cuda:
+      device = torch.device('cuda')
+    else:
+      device = torch.device('cpu')
+    image_batch_ = torch.squeeze(image, dim=1).to(device)
     image_batch_ = image_batch_.detach().cpu().numpy()
     batch_size_ = image_batch_.shape[0]
 
@@ -298,7 +310,7 @@ class KeepLargestComponent(nn.Module):
       image_ = np.squeeze(image_batch_[ix_,...])
       comp_, feat_ = measurements.label(image_)
       largest_ = (image_ == feat_).astype(int)
-      image[ix_,...] = torch.unsqueeze(torch.tensor(largest_),dim=0)
+      image[ix_,...] = torch.unsqueeze(torch.tensor(largest_),dim=0).to(device)
     
     return image
 
