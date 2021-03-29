@@ -89,6 +89,7 @@ class Trainer(nn.Module):
             dice_log_ensemble[:] = np.nan
             for i, model in enumerate(self.model_ensemble):
                 early_ = 0
+                dice_max = 0
                 train = train_list[i]
                 val = val_list[i]
                 opt_ = self.opt[i]
@@ -133,8 +134,9 @@ class Trainer(nn.Module):
                                 dice_epoch.append(1 - dice_metric.item())
                             dice_log_ensemble[i,int(epoch//self.val_interval)] = np.mean(dice_epoch)
                         if epoch >= self.val_interval:
-                            if dice_log_ensemble[i,int(epoch//self.val_interval)] > dice_log_ensemble[i,int(epoch//self.val_interval)-1]:
+                            if dice_log_ensemble[i,int(epoch//self.val_interval)] > dice_max:
                                 early_ = 0
+                                dice_max = dice_log_ensemble[i,int(epoch//self.val_interval)]
                                 path_ = path.join(self.outdir,\
                                     'model',oname,'ensemble/model_{}'.format(i))
                                 if not path.exists(path_):
@@ -151,6 +153,7 @@ class Trainer(nn.Module):
             dice_log = np.empty(int(self.nb_epochs//self.val_interval))
             dice_log[:] = np.nan
             early_ = 0
+            dice_max = 0
             model = self.model
             for epoch in range(self.nb_epochs):
                 if self.early_stop:
@@ -194,8 +197,9 @@ class Trainer(nn.Module):
                     if epoch % self.print_interval == 0:
                         print('Mean Validation Dice: {}'.format(dice_log[int(epoch//self.val_interval)]))
                     if epoch >= self.val_interval:
-                        if dice_log[int(epoch//self.val_interval)] > dice_log[int(epoch//self.val_interval)-1]:
+                        if dice_log[int(epoch//self.val_interval)] > dice_max:
                             early_ = 0
+                            dice_max = dice_log[int(epoch//self.val_interval)]
                             path_ = path.join(self.outdir,\
                                 'model',oname)
                             if not path.exists(path_):
