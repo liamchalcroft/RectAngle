@@ -259,13 +259,13 @@ class Smooth(object):
 
 
 class Flip(object): 
+  """ Randomly flip image in vertical axis (left and right)
+  Input arguments:
+    image : Torch Tensor [B,C,H,W], dtype = int
+    prob : int, default = 0.7
+          Probability of augmentation occuring at each pass.
+  """
   def __init__(self, prob=0.7):
-    """ Randomly flip image in vertical axis (left and right)
-    Input arguments:
-      image : Torch Tensor [B,C,H,W], dtype = int
-      prob : int, default = 0.7
-            Probability of augmentation occuring at each pass.
-    """
     super().__init__()
     self.prob = prob
     
