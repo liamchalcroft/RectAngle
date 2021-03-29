@@ -269,11 +269,11 @@ class Flip(object):
     super().__init__()
     self.prob = prob
     
-    def __call__(self, image):
-      rand_ = random.uniform(0,1)
-      if rand_ < self.prob:
-        image = torch.fliplr(image)
-      return image
+  def __call__(self, image):
+    rand_ = random.uniform(0,1)
+    if rand_ < self.prob:
+      image = torch.fliplr(image)
+    return image
 
 
 # def Flip(image, prob=0.7):
