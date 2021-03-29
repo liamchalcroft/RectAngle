@@ -114,7 +114,7 @@ class Trainer(nn.Module):
                         loss_.backward()
                         opt_.step()
                         loss_epoch.append(loss_.item())
-                    loss_log_ensemble[i,epoch] = np.mean(loss_epoch)
+                    loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
                         print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log_ensemble[i,epoch]))
                     if epoch % self.val_interval == 0:
@@ -132,7 +132,7 @@ class Trainer(nn.Module):
                                         pred = aug(pred)
                                 dice_metric = self.metric(pred, label)
                                 dice_epoch.append(1 - dice_metric.item())
-                            dice_log_ensemble[i,int(epoch//self.val_interval)] = np.mean(dice_epoch)
+                            dice_log_ensemble[i,int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
                         if epoch >= self.val_interval:
                             if dice_log_ensemble[i,int(epoch//self.val_interval)] > dice_max:
                                 early_ = 0
@@ -175,7 +175,7 @@ class Trainer(nn.Module):
                     loss_.backward()
                     self.opt.step()
                     loss_epoch.append(loss_.item())
-                loss_log[epoch] = np.mean(loss_epoch)
+                loss_log[epoch] = np.nanmean(loss_epoch)
                 if epoch % self.print_interval == 0:
                     print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log[epoch]))
                 if epoch % self.val_interval == 0:
@@ -193,7 +193,7 @@ class Trainer(nn.Module):
                                     pred = aug(pred)
                             dice_metric = self.metric(pred, label)
                             dice_epoch.append(1 - dice_metric.item())
-                        dice_log[int(epoch//self.val_interval)] = np.mean(dice_epoch)
+                        dice_log[int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
                     if epoch % self.print_interval == 0:
                         print('Mean Validation Dice: {}'.format(dice_log[int(epoch//self.val_interval)]))
                     if epoch >= self.val_interval:
@@ -212,16 +212,16 @@ class Trainer(nn.Module):
         if self.ensemble:
             plt.figure(figsize=(8,6))
             plt.plot(np.linspace(0,self.nb_epochs,self.nb_epochs, dtype=int), \
-                np.mean(loss_log_ensemble, axis=0))
+                np.nanmean(loss_log_ensemble, axis=0))
             plt.fill_between(np.linspace(0,self.nb_epochs,self.nb_epochs, dtype=int), \
-                np.mean(loss_log_ensemble, axis=0)+np.std(loss_log_ensemble, axis=0),\
-                np.mean(loss_log_ensemble, axis=0)-np.std(loss_log_ensemble, axis=0),\
+                np.nanmean(loss_log_ensemble, axis=0)+np.nanstd(loss_log_ensemble, axis=0),\
+                np.nanmean(loss_log_ensemble, axis=0)-np.nanstd(loss_log_ensemble, axis=0),\
                 alpha=0.3)
             plt.plot(np.linspace(0,self.nb_epochs,\
-                int(self.nb_epochs//self.val_interval), dtype=int), np.mean(dice_log_ensemble, axis=0))
+                int(self.nb_epochs//self.val_interval), dtype=int), np.nanmean(dice_log_ensemble, axis=0))
             plt.fill_between(np.linspace(0,self.nb_epochs,int(self.nb_epochs//self.val_interval), dtype=int), \
-                np.mean(dice_log_ensemble, axis=0)+np.std(dice_log_ensemble, axis=0),\
-                np.mean(dice_log_ensemble, axis=0)-np.std(dice_log_ensemble, axis=0),\
+                np.nanmean(dice_log_ensemble, axis=0)+np.nanstd(dice_log_ensemble, axis=0),\
+                np.nanmean(dice_log_ensemble, axis=0)-np.nanstd(dice_log_ensemble, axis=0),\
                 alpha=0.3)
             plt.xlabel('Epoch #')
             plt.legend(['Train Loss', 'Validation Dice'])
