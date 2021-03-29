@@ -265,7 +265,7 @@ class Flip(object):
     prob : int, default = 0.7
           Probability of augmentation occuring at each pass.
   """
-  def __init__(self, prob=0.7):
+  def __init__(self, prob=0.3):
     super().__init__()
     self.prob = prob
     
