@@ -273,7 +273,7 @@ class Trainer(nn.Module):
             for i, (input, label) in enumerate(test):
                 input, label = input.to(self.device), label.to(self.device)
                 if test_pre:
-                    for aug in val_pre:
+                    for aug in test_pre:
                         input = aug(input)
                 if self.ensemble:
                     pred = [model(input) for model in self.model_ensemble]
