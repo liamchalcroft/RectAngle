@@ -19,23 +19,39 @@ import numpy as np
 #     - Keep-largest-connected-component
 
 
-def z_score(image):
+class z_score(nn.Module):
   """ Z-Score normalisation of image. Applied image-wise (not batch-wise) such
   that each image has a mean of 0 and standard deviation of 1.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
   """
-  batch_ = image.shape[0]
-  for batch_iter_ in range(batch_):
-    image[batch_iter_,...] = (image[batch_iter_,...] - \
-                              torch.mean(image[batch_iter_,...]) / \
-                              torch.std(image[batch_iter_,...]))
-  return image
+  def __init__(self):
+    super().__init__()
+
+  def forward(self, image):
+    batch_ = image.shape[0]
+    for batch_iter_ in range(batch_):
+      image[batch_iter_,...] = (image[batch_iter_,...] - \
+                                torch.mean(image[batch_iter_,...]) / \
+                                torch.std(image[batch_iter_,...]))
+    return image
 
 
-def Affine(image, prob=0.7,
-           degrees=10, translate=0.1,
-           scale=(0.9,1.1), shear=10):
+# def z_score(image):
+#   """ Z-Score normalisation of image. Applied image-wise (not batch-wise) such
+#   that each image has a mean of 0 and standard deviation of 1.
+#   Input arguments:
+#     image : Torch Tensor [B,C,H,W], dtype = int
+#   """
+#   batch_ = image.shape[0]
+#   for batch_iter_ in range(batch_):
+#     image[batch_iter_,...] = (image[batch_iter_,...] - \
+#                               torch.mean(image[batch_iter_,...]) / \
+#                               torch.std(image[batch_iter_,...]))
+#   return image
+
+
+class Affine(nn.Module):
   """ Affine augmentation of image. Wrapper for torchvision RandomAffine.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
@@ -52,16 +68,53 @@ def Affine(image, prob=0.7,
             Range of possible shear rotation (-shear, +shear). Set to None for
             no shear.
   """
-  rand_ = random.uniform(0,1)
-  if rand_ < prob:
-    RandAffine_ = RandomAffine(degrees=degrees, translate=(translate,translate),
-                               scale=scale, shear=shear)
-    image = RandAffine_(image)
-  return image
+  def __init__(self, prob=0.7,\
+    degrees=10, translate=0.1,
+    scale=(0.9,1.1), shear=10):
+    super().__init__() 
+    self.prob = prob
+    self.degrees = degrees
+    self.translate = translate
+    self.scale = scale
+    self.shear = shear
+
+  def forward(self, image):
+    rand_ = random.uniform(0,1)
+    if rand_ < self.prob:
+      RandAffine_ = RandomAffine(degrees=self.degrees, translate=(self.translate,self.translate),
+                                scale=self.scale, shear=self.shear)
+      image = RandAffine_(image)
+    return image
+           
+
+# def Affine(image, prob=0.7,
+#            degrees=10, translate=0.1,
+#            scale=(0.9,1.1), shear=10):
+#   """ Affine augmentation of image. Wrapper for torchvision RandomAffine.
+#   Input arguments:
+#     image : Torch Tensor [B,C,H,W], dtype = int
+#     prob : int, default = 0.7
+#            Probability of augmentation occuring at each pass.
+#     degrees : int, default = 10
+#               Range of possible rotation (-degrees, +degrees). Set to None for
+#               no rotation.
+#     translate : float, default = 0.1
+#                 Range of possible translation. Set to None for no translation.
+#     scale : tuple, default = (0.9, 1.1)
+#             Range of possible scaling. Set to None for no scaling.
+#     shear : int, default = 10
+#             Range of possible shear rotation (-shear, +shear). Set to None for
+#             no shear.
+#   """
+#   rand_ = random.uniform(0,1)
+#   if rand_ < prob:
+#     RandAffine_ = RandomAffine(degrees=degrees, translate=(translate,translate),
+#                                scale=scale, shear=shear)
+#     image = RandAffine_(image)
+#   return image
 
 
-
-def SpeckleNoise(image, type='speckle', mean=0, sigma=1, prob=0.7):
+class SpeckleNoise(nn.Module):
   """ Noise augmentation of image. Distribution scaled to image so 
   normalisation not essential.
   Input arguments:
@@ -78,27 +131,72 @@ def SpeckleNoise(image, type='speckle', mean=0, sigma=1, prob=0.7):
     prob : int, default = 0.7
            Probability of augmentation occuring at each pass.
   """
-  rand_ = random.uniform(0,1)
-  if rand_ < prob:
-    max = torch.amax(image, dim=(1,2,3))
-    noise = torch.randn(image.shape)
+  def __init__(self, type='speckle', mean=0, sigma=1, prob=0.7):
+    super().__init__()
+    self.type = type
+    self.mean = mean
+    self.sigma = sigma
+    self.prob = prob
 
-    for i, max_ in enumerate(max):
-      mean_ = max_ * mean
-      sigma_ = max_ * sigma
-      noise[i,...] = mean_ + (sigma_**0.5) * noise[i,...]
+  def forward(self, image):
+    rand_ = random.uniform(0,1)
+    if rand_ < self.prob:
+      max = torch.amax(image, dim=(1,2,3))
+      noise = torch.randn(image.shape)
 
-    if 'speckle':
-      image = noise * image
-    elif 'gauss':
-      image = noise + image
-    else:
-      raise ValueError('Invalid noise type - \
-      please enter either "speckle" or "gauss".')
-  return image
+      for i, max_ in enumerate(max):
+        mean_ = max_ * self.mean
+        sigma_ = max_ * self.sigma
+        noise[i,...] = mean_ + (sigma_**0.5) * noise[i,...]
+
+      if self.type == 'speckle':
+        image = noise * image
+      elif self.type == 'gauss':
+        image = noise + image
+      else:
+        raise ValueError('Invalid noise type - \
+        please enter either "speckle" or "gauss".')
+    return image
+
+
+# def SpeckleNoise(image, type='speckle', mean=0, sigma=1, prob=0.7):
+#   """ Noise augmentation of image. Distribution scaled to image so 
+#   normalisation not essential.
+#   Input arguments:
+#     image : Torch Tensor [B,C,H,W], dtype = int
+#     type : string, default = 'speckle'
+#            Type of noise to apply.
+#            Options:
+#                   * 'speckle': Multiplicative speckle noise
+#                   * 'gauss' : Additive gaussian noise
+#     mean : int, default = 0
+#            Mean of distribution for random sampling
+#     sigma : int, default = 1
+#             Standard deviation of distribution for random sampling
+#     prob : int, default = 0.7
+#            Probability of augmentation occuring at each pass.
+#   """
+#   rand_ = random.uniform(0,1)
+#   if rand_ < prob:
+#     max = torch.amax(image, dim=(1,2,3))
+#     noise = torch.randn(image.shape)
+
+#     for i, max_ in enumerate(max):
+#       mean_ = max_ * mean
+#       sigma_ = max_ * sigma
+#       noise[i,...] = mean_ + (sigma_**0.5) * noise[i,...]
+
+#     if 'speckle':
+#       image = noise * image
+#     elif 'gauss':
+#       image = noise + image
+#     else:
+#       raise ValueError('Invalid noise type - \
+#       please enter either "speckle" or "gauss".')
+#   return image
   
 
-def Smooth(image, sigma=1, prob=0.7):
+class Smooth(nn.Module): 
   """ Spatial smoothing of image. Currently only Gaussian smoothing.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
@@ -107,53 +205,123 @@ def Smooth(image, sigma=1, prob=0.7):
     prob : int, default = 0.7
            Probability of augmentation occuring at each pass.
   """
-  # Ideally add Savitzky-Golay filter instead of Gauss
-  rand_ = random.uniform(0,1)
-  if rand_ < prob:
-    max = torch.amax(image, dim=(1,2,3))
-    noise = torch.randn(image.shape)
+  def __init__(self, sigma=1, prob=0.7): 
+    super().__init__()
+    self.sigma = sigma
+    self.prob = prob
 
-    for i, max_ in enumerate(max):
-      sigma_ = max_ * sigma_
-      image_ = torch.squeeze(image[i,0,...])
-      image_ = image_.detach().cpu().numpy()
-      image_smooth_ = gaussian_filter(image_, sigma_)
-      image[i,0,...] = torch.tensor(image_smooth_)
-  return image
+  def forward(self, image):
+    # Ideally add Savitzky-Golay filter instead of Gauss
+    rand_ = random.uniform(0,1)
+    if rand_ < self.prob:
+      max = torch.amax(image, dim=(1,2,3))
+      noise = torch.randn(image.shape)
 
-
-def Flip(image, prob=0.7):
-  """ Randomly flip image in vertical axis (left and right)
-  Input arguments:
-    image : Torch Tensor [B,C,H,W], dtype = int
-    prob : int, default = 0.7
-           Probability of augmentation occuring at each pass.
-  """
-  rand_ = random.uniform(0,1)
-  if rand_ < prob:
-    image = torch.fliplr(image)
-  return image
+      for i, max_ in enumerate(max):
+        sigma_ = max_ * self.sigma
+        image_ = torch.squeeze(image[i,0,...])
+        image_ = image_.detach().cpu().numpy()
+        image_smooth_ = gaussian_filter(image_, sigma_)
+        image[i,0,...] = torch.tensor(image_smooth_)
+    return image
 
 
-def KeepLargestComponent(image):
+# def Smooth(image, sigma=1, prob=0.7):
+#   """ Spatial smoothing of image. Currently only Gaussian smoothing.
+#   Input arguments:
+#     image : Torch Tensor [B,C,H,W], dtype = int
+#     sigma : int, default = 1
+#             Standard deviation of smoothing kernel
+#     prob : int, default = 0.7
+#            Probability of augmentation occuring at each pass.
+#   """
+#   # Ideally add Savitzky-Golay filter instead of Gauss
+#   rand_ = random.uniform(0,1)
+#   if rand_ < prob:
+#     max = torch.amax(image, dim=(1,2,3))
+#     noise = torch.randn(image.shape)
+
+#     for i, max_ in enumerate(max):
+#       sigma_ = max_ * sigma_
+#       image_ = torch.squeeze(image[i,0,...])
+#       image_ = image_.detach().cpu().numpy()
+#       image_smooth_ = gaussian_filter(image_, sigma_)
+#       image[i,0,...] = torch.tensor(image_smooth_)
+#   return image
+
+
+class Flip(nn.Module): 
+  def __init__(self, prob=0.7):
+    """ Randomly flip image in vertical axis (left and right)
+    Input arguments:
+      image : Torch Tensor [B,C,H,W], dtype = int
+      prob : int, default = 0.7
+            Probability of augmentation occuring at each pass.
+    """
+    super().__init__()
+    self.prob = prob
+    
+    def forward(self, image):
+      rand_ = random.uniform(0,1)
+      if rand_ < self.prob:
+        image = torch.fliplr(image)
+      return image
+
+
+# def Flip(image, prob=0.7):
+#   """ Randomly flip image in vertical axis (left and right)
+#   Input arguments:
+#     image : Torch Tensor [B,C,H,W], dtype = int
+#     prob : int, default = 0.7
+#            Probability of augmentation occuring at each pass.
+#   """
+#   rand_ = random.uniform(0,1)
+#   if rand_ < prob:
+#     image = torch.fliplr(image)
+#   return image
+
+
+class KeepLargestComponent(nn.Module):
   """ Remove all regions of label except largest connected component.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
   """
-  image_batch_ = torch.squeeze(image, dim=1)
-  image_batch_ = image_batch_.detach().cpu().numpy()
-  batch_size_ = image_batch_.shape[0]
+  def __init__(self):
+    super().__init__()
 
-  for ix_ in range(batch_size_):
-    image_ = np.squeeze(image_batch_[ix_,...])
-    comp_, feat_ = measurements.label(image_)
-    largest_ = (image_ == feat_).astype(int)
-    image[ix_,...] = torch.unsqueeze(torch.tensor(largest_),dim=0)
+  def forward(self, image):
+    image_batch_ = torch.squeeze(image, dim=1)
+    image_batch_ = image_batch_.detach().cpu().numpy()
+    batch_size_ = image_batch_.shape[0]
+
+    for ix_ in range(batch_size_):
+      image_ = np.squeeze(image_batch_[ix_,...])
+      comp_, feat_ = measurements.label(image_)
+      largest_ = (image_ == feat_).astype(int)
+      image[ix_,...] = torch.unsqueeze(torch.tensor(largest_),dim=0)
+    
+    return image
+
+
+# def KeepLargestComponent(image):
+#   """ Remove all regions of label except largest connected component.
+#   Input arguments:
+#     image : Torch Tensor [B,C,H,W], dtype = int
+#   """
+#   image_batch_ = torch.squeeze(image, dim=1)
+#   image_batch_ = image_batch_.detach().cpu().numpy()
+#   batch_size_ = image_batch_.shape[0]
+
+#   for ix_ in range(batch_size_):
+#     image_ = np.squeeze(image_batch_[ix_,...])
+#     comp_, feat_ = measurements.label(image_)
+#     largest_ = (image_ == feat_).astype(int)
+#     image[ix_,...] = torch.unsqueeze(torch.tensor(largest_),dim=0)
   
-  return image
+#   return image
 
 
-def Binary(image, threshold=0.5):
+class Binary(nn.Module):
   """ Convert float tensor to binary based on threshold value.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
@@ -161,4 +329,20 @@ def Binary(image, threshold=0.5):
                 Value above which all intensities are converted to 1, and
                 below which all intensities are converted to 0.
   """
-  return (image > threshold).int()
+  def __init__(self, threshold=0.5):
+    super().__init__()
+    self.threshold = threshold
+
+  def forward(self, image):
+    return (image > self.threshold).int()
+
+
+# def Binary(image, threshold=0.5):
+#   """ Convert float tensor to binary based on threshold value.
+#   Input arguments:
+#     image : Torch Tensor [B,C,H,W], dtype = int
+#     threshold : float, default = 0.5
+#                 Value above which all intensities are converted to 1, and
+#                 below which all intensities are converted to 0.
+#   """
+#   return (image > threshold).int()
