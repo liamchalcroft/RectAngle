@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from rectangle.utils.metrics import DiceLoss
+from rectangle.utils.metrics import DiceLoss, Precision, Recall
 from torch.optim import Adam
 from copy import deepcopy
 from os import path, makedirs
@@ -261,13 +261,17 @@ class Trainer(nn.Module):
 
 
     def test(self, test_data, oname=None, 
-    test_pre=None, test_post=None):
+    test_pre=None, test_post=None, overlap=True):
         if not oname:
             oname = date.today()
             oname = oname.strftime("%b-%d-%Y")
 
         test = DataLoader(test_data, 1)
         dice_log = []
+        prec_log = []
+        rec_log = []
+        precision = Precision()
+        recall = Recall()
         self.model.eval()
         with torch.no_grad():
             for i, (input, label) in enumerate(test):
@@ -286,6 +290,8 @@ class Trainer(nn.Module):
                         pred = aug(pred)
                 dice_metric = self.metric(pred, label)
                 dice_log.append(1-dice_metric.item())
+                prec_log.append(precision(pred, label))
+                rec_log.append(recall(pred, label))
 
                 input_img = input.detach().cpu().numpy()
                 pred_img = pred.detach().cpu().numpy()
@@ -295,19 +301,28 @@ class Trainer(nn.Module):
                 pred_img = np.squeeze(pred_img)
                 label_img = np.squeeze(label_img)
 
-                plt.figure()
-                plt.subplot(131)
-                plt.imshow(input_img, cmap='gray')
-                plt.axis('off')
-                plt.title('Image')
-                plt.subplot(132)
-                plt.imshow(pred_img, cmap='gray', vmin=0, vmax=1)
-                plt.axis('off')
-                plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
-                plt.subplot(133)
-                plt.imshow(label_img, cmap='gray', vmin=0, vmax=1)
-                plt.axis('off')
-                plt.title('Ground Truth')
+                if overlap:
+                    plt.figure()
+                    plt.imshow(input_img, cmap='gray')
+                    plt.axis('off')
+                    plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.3)
+                    plt.axis('off')
+                    plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.3)
+                    plt.axis('off')
+                else:
+                    plt.figure()
+                    plt.subplot(131)
+                    plt.imshow(input_img, cmap='gray')
+                    plt.axis('off')
+                    plt.title('Image')
+                    plt.subplot(132)
+                    plt.imshow(pred_img, cmap='gray', vmin=0, vmax=1)
+                    plt.axis('off')
+                    plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
+                    plt.subplot(133)
+                    plt.imshow(label_img, cmap='gray', vmin=0, vmax=1)
+                    plt.axis('off')
+                    plt.title('Ground Truth')
 
                 path_ = path.join(self.outdir,\
                                 'testing/plots')
@@ -316,11 +331,19 @@ class Trainer(nn.Module):
                 plt.savefig(path.join(path_, 'pred{}_{}.png'.format(i, oname)))
 
         dice_log = np.array(dice_log)
+        prec_log = np.array(prec_log)
+        rec_log = np.array(rec_log)
+        print('Mean Dice score: {:.2f}±{:.3f}, Mean Precision: {:.2f}±{:.3f}, Mean Recall: {:.2f}±{:.3f}'.format(\
+            np.mean(dice_log), np.std(dice_log), np.mean(prec_log), np.std(prec_log), np.mean(rec_log), np.std(rec_log)))
         path_ = path.join(self.outdir,\
                                 'testing/table')
         if not path.exists(path_):
             makedirs(path_)
         np.savetxt(path.join(path_, 'dice_{}.csv'.format(oname)),\
                 dice_log, delimiter=',')
+            np.savetxt(path.join(path_, 'precision_{}.csv'.format(oname)),\
+                prec_log, delimiter=',')
+            np.savetxt(path.join(path_, 'recall_{}.csv'.format(oname)),\
+                rec_log, delimiter=',')
 
         print('Testing complete')
