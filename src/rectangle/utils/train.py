@@ -309,7 +309,7 @@ class Trainer(nn.Module):
                     plt.figure()
                     plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
                     plt.axis('off')
-                    plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.4)
+                    plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.7)
                     plt.axis('off')
                     plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.4)
                     plt.axis('off')
