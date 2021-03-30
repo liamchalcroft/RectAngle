@@ -262,7 +262,7 @@ class Trainer(nn.Module):
 
 
     def test(self, test_data, oname=None, 
-    test_pre=None, test_post=None, overlap=True):
+    test_pre=None, test_post=None, overlap='contour'):
         if not oname:
             oname = date.today()
             oname = oname.strftime("%b-%d-%Y")
@@ -302,13 +302,25 @@ class Trainer(nn.Module):
                 pred_img = np.squeeze(pred_img)
                 label_img = np.squeeze(label_img)
 
-                if overlap:
+                if overlap=='contour':
                     input_img -= input_img.min()
                     input_img *= 1.0/input_img.max()
                     label_img = laplace(label_img)
                     pred_img = laplace(pred_img)
                     label_img = (label_img != 0)
                     pred_img = (pred_img != 0)
+                    label_img = np.ma.masked_where(label_img == 0, label_img)
+                    pred_img = np.ma.masked_where(pred_img == 0, pred_img)
+                    plt.figure()
+                    plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
+                    plt.axis('off')
+                    plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1)
+                    plt.axis('off')
+                    plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1)
+                    plt.axis('off')
+                elif overlap=='mask':
+                    input_img -= input_img.min()
+                    input_img *= 1.0/input_img.max()
                     label_img = np.ma.masked_where(label_img == 0, label_img)
                     pred_img = np.ma.masked_where(pred_img == 0, pred_img)
                     plt.figure()
