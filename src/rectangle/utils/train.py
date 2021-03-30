@@ -8,7 +8,7 @@ from datetime import date
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, random_split, ConcatDataset
 import numpy as np
-from scipy.ndimage.morphology import laplace
+from scipy.ndimage import laplace
 
 
 class Trainer(nn.Module):
