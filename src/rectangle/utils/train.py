@@ -343,7 +343,7 @@ class Trainer(nn.Module):
         plt.plot([0,0.5,1], [0.5,0.5,0.5], '--')
         plt.xlabel('Recall')
         plt.ylabel('Precision')
-        plt.title('AUC = {:.2f}'.format(np.sum(prec * rec)/np.size(prec)))
+        plt.title('AUC = {:.2f}'.format(np.sum(prec_log * rec_log)/np.size(prec_log)))
         plt.savefig(path.join(path_, 'prec_rec_{}'.format(oname)))
 
 
