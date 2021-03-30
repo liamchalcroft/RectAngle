@@ -8,7 +8,7 @@ from datetime import date
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, random_split, ConcatDataset
 import numpy as np
-from scipy.ndimage.morphology import binary_erosion
+from scipy.ndimage.morphology import laplace
 
 
 class Trainer(nn.Module):
@@ -305,16 +305,16 @@ class Trainer(nn.Module):
                 if overlap:
                     input_img -= input_img.min()
                     input_img *= 1.0/input_img.max()
-                    label_img = binary_erosion(label_img)
-                    pred_img = binary_erosion(pred_img)
+                    label_img = laplace(label_img)
+                    pred_img = laplace(pred_img)
                     label_img = np.ma.masked_where(label_img == 0, label_img)
                     pred_img = np.ma.masked_where(pred_img == 0, pred_img)
                     plt.figure()
                     plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
                     plt.axis('off')
-                    plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.7)
+                    plt.imshow(label_img >= 1, cmap='Greens')
                     plt.axis('off')
-                    plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.7)
+                    plt.imshow(pred_img>= 1, cmap='Reds')
                     plt.axis('off')
                 else:
                     plt.figure()
