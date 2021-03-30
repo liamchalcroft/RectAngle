@@ -311,7 +311,7 @@ class Trainer(nn.Module):
                     plt.axis('off')
                     plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.7)
                     plt.axis('off')
-                    plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.4)
+                    plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.7)
                     plt.axis('off')
                 else:
                     plt.figure()
