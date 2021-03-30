@@ -266,7 +266,7 @@ class Trainer(nn.Module):
             oname = date.today()
             oname = oname.strftime("%b-%d-%Y")
 
-        test = DataLoader(test_data, 1)
+        test = DataLoader(test_data, 1, shuffle=False)
         dice_log = []
         prec_log = []
         rec_log = []
@@ -337,8 +337,17 @@ class Trainer(nn.Module):
         dice_log = np.array(dice_log, dtype=float)
         prec_log = np.array(prec_log, dtype=float)
         rec_log = np.array(rec_log, dtype=float)
-        print('Mean Dice score: {:.2f}±{:.3f}, Mean Precision: {:.2f}±{:.3f}, \
-            Mean Recall: {:.2f}±{:.3f}'.format(np.mean(dice_log), np.std(dice_log), np.mean(prec_log), np.std(prec_log), np.mean(rec_log), np.std(rec_log)))
+
+        plt.figure()
+        plt.scatter(rec_log, prec_log)
+        plt.plot([0,0.5,1], [0.5,0.5,0.5], '--')
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.title('AUC = {:.2f}'.format(np.sum(prec * rec)/np.size(prec)))
+        plt.savefig(path.join(path_, 'prec_rec_{}'.format(oname)))
+
+
+        print('Mean Dice score: {:.2f}±{:.3f}, Mean Precision: {:.2f}±{:.3f}, Mean Recall: {:.2f}±{:.3f}'.format(np.mean(dice_log), np.std(dice_log), np.mean(prec_log), np.std(prec_log), np.mean(rec_log), np.std(rec_log)))
         path_ = path.join(self.outdir,\
                                 'testing/table')
         if not path.exists(path_):
