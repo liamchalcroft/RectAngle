@@ -115,4 +115,9 @@ class H5DataLoader(torch.utils.data.Dataset):
             )][()].astype('float32')), dim=0) for label_ix in range(3)])
       label_mean = torch.unsqueeze(torch.mean(label_batch, dim=0), dim=0)
       label = torch.round(label_mean).int()
+    elif self.label == 'mean':
+      label_batch = torch.cat([torch.unsqueeze(torch.tensor(
+          self.file['label_%04d_%03d_%02d' % (subj_ix, frame_ix, label_ix
+            )][()].astype('float32')), dim=0) for label_ix in range(3)])
+      label_mean = torch.unsqueeze(torch.mean(label_batch, dim=0), dim=0)
     return(image, label)
