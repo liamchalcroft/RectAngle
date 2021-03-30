@@ -302,12 +302,16 @@ class Trainer(nn.Module):
                 label_img = np.squeeze(label_img)
 
                 if overlap:
+                    input_img -= input_img.min()
+                    input_img *= 1.0/input_img.max()
+                    label_img = np.ma.masked_where(label_img == 0, label_img)
+                    pred_img = np.ma.masked_where(pred_img == 0, pred_img)
                     plt.figure()
-                    plt.imshow(input_img, cmap='gray')
+                    plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
                     plt.axis('off')
-                    plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.3)
+                    plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.4)
                     plt.axis('off')
-                    plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.3)
+                    plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.4)
                     plt.axis('off')
                 else:
                     plt.figure()
@@ -330,11 +334,11 @@ class Trainer(nn.Module):
                     makedirs(path_)
                 plt.savefig(path.join(path_, 'pred{}_{}.png'.format(i, oname)))
 
-        dice_log = np.array(dice_log)
-        prec_log = np.array(prec_log)
-        rec_log = np.array(rec_log)
-        print('Mean Dice score: {:.2f}±{:.3f}, Mean Precision: {:.2f}±{:.3f}, Mean Recall: {:.2f}±{:.3f}'.format(\
-            np.mean(dice_log), np.std(dice_log), np.mean(prec_log), np.std(prec_log), np.mean(rec_log), np.std(rec_log)))
+        dice_log = np.array(dice_log, dtype=float)
+        prec_log = np.array(prec_log, dtype=float)
+        rec_log = np.array(rec_log, dtype=float)
+        print('Mean Dice score: {:.2f}±{:.3f}, Mean Precision: {:.2f}±{:.3f}, \
+            Mean Recall: {:.2f}±{:.3f}'.format(np.mean(dice_log), np.std(dice_log), np.mean(prec_log), np.std(prec_log), np.mean(rec_log), np.std(rec_log)))
         path_ = path.join(self.outdir,\
                                 'testing/table')
         if not path.exists(path_):
