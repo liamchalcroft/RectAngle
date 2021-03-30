@@ -18,9 +18,9 @@ class DiceLoss(nn.Module):
                 Only applied if soft=False.
   """
   # Standard Dice loss, with variable smoothing constant
-  def __init__(self, soft=True, smooth=1e-7, threshold=0.5):
+  def __init__(self, soft=True, threshold=0.5, eps=1e-7):
       super().__init__()
-      self.smooth = smooth
+      self.eps = eps
       self.soft = soft
       self.threshold = threshold
 
@@ -31,15 +31,50 @@ class DiceLoss(nn.Module):
     if not self.soft:
       inputs = BinaryDice(inputs, self.threshold)
 
-    inputs = inputs.view(-1)
-    targets = targets.view(-1)
+    inputs = inputs.view(-1).float()
+    targets = targets.view(-1).float()
 
     intersection = torch.sum(inputs * targets)
-    dice = ((2. * intersection) + self.smooth) / \
-            (torch.sum(inputs) + torch.sum(targets) + self.smooth)
+    dice = ((2. * intersection) + self.eps) / \
+            (torch.sum(inputs) + torch.sum(targets) + self.eps)
 
     return (1 - dice)
 
   @staticmethod
   def BinaryDice(image, threshold=0.5):
     return (image > threshold).int()
+
+
+class Precision(object):
+  """ Precision metric (TP/(TP+FP))
+  """
+  def __init__(self, eps=1e-7):
+    super().__init__()
+    self.eps = eps
+
+  def __call__(self, inputs, targets):
+    inputs = inputs.view(-1).float()
+    targets = targets.view(-1).float()
+
+    TP = torch.sum(inputs * targets)
+    FP = torch.sum((inputs == 1) & (targets == 0))
+
+    return (TP + self.eps)/(TP + FP + self.eps)
+
+
+class Recall(object):
+  """ Recall metric (TP/(TP+FN))
+  """
+  def __init__(self, eps=1e-7):
+    super().__init__()
+    self.eps = eps
+
+  def __call__(self, inputs, targets):
+    inputs = inputs.view(-1).float()
+    targets = targets.view(-1).float()
+
+    TP = torch.sum(inputs * targets)
+    FP = torch.sum((inputs == 0) & (targets == 1))
+
+    return (TP + self.eps)/(TP + FP + self.eps)
+    
