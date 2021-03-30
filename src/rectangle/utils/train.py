@@ -341,9 +341,9 @@ class Trainer(nn.Module):
             makedirs(path_)
         np.savetxt(path.join(path_, 'dice_{}.csv'.format(oname)),\
                 dice_log, delimiter=',')
-            np.savetxt(path.join(path_, 'precision_{}.csv'.format(oname)),\
+        np.savetxt(path.join(path_, 'precision_{}.csv'.format(oname)),\
                 prec_log, delimiter=',')
-            np.savetxt(path.join(path_, 'recall_{}.csv'.format(oname)),\
+        np.savetxt(path.join(path_, 'recall_{}.csv'.format(oname)),\
                 rec_log, delimiter=',')
 
         print('Testing complete')
