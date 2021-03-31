@@ -144,16 +144,11 @@ class DenseNet(nn.Module):
     self.classifier = nn.Sequential(nn.Flatten(), nn.Linear(in_features=2208, out_features=1, bias=True), nn.Sigmoid())
 
   def forward(self, x):
-    print(x.shape)
     x = self.normalise(x)
-    print(x.shape)
     x = self.resample(x)
-    print(x.shape)
     x = self.features(x)
-    print(x.shape)
     x = torch.squeeze(x)
     x = self.classifier(x)
-    print(x.shape)
     return x
 
 
