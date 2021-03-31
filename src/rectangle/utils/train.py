@@ -56,7 +56,7 @@ class Trainer(nn.Module):
 
     # need to fix ensemble data - k-fold?
     def train(self, train_data, val_data=None, oname=None, 
-        train_pre=None, train_post=None, train_batch=64, train_shuffle=True,
+        train_pre=None, train_post=None, train_batch=128, train_shuffle=True,
         val_pre=None, val_post=None, val_batch=8, val_shuffle=True):
 
         if self.ensemble:
