@@ -89,5 +89,6 @@ class Accuracy(object):
     inputs = inputs.view(-1).float()
     targets = targets.view(-1).float()
 
-    return (inputs == targets).mean().item()
-    
+    correct = (torch.round(inputs) == targets).sum().item()
+
+    return correct / inputs.size()
