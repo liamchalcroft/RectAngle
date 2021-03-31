@@ -144,15 +144,20 @@ class DenseNet(nn.Module):
     self.classifier = nn.Linear(in_features=2208, out_features=1, bias=True)
 
   def forward(self, x):
+    print(x.shape)
     x = self.normalise(x)
+    print(x.shape)
     x = self.resample(x)
+    print(x.shape)
     x = self.features(x)
+    print(x.shape)
     x = self.classifier(x)
+    print(x.shape)
     return x
 
 
-def MakeDenseNet(freeze_weights=True):
-  cnn = densenet161(pretrained=True)
+def MakeDenseNet(freeze_weights=True, pretrain=True):
+  cnn = densenet161(pretrained=pretrain)
 
   if freeze_weights:
     for param in cnn.parameters():
