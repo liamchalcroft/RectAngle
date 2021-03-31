@@ -169,7 +169,7 @@ class ClassifyDataLoader(torch.utils.data.Dataset):
     label_vote = torch.sum(label_batch, dim=(1,2))
     sum_vote = torch.sum(label_vote != 0)
     if sum_vote >= 2:
-      label = torch.tensor([1])
+      label = torch.tensor([1.0])
     else:
-      label = torch.tensor([0])
+      label = torch.tensor([0.0])
     return(image, label)
