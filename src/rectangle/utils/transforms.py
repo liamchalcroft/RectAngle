@@ -55,22 +55,22 @@ class Affine(object):
   """ Affine augmentation of image. Wrapper for torchvision RandomAffine.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
-    prob : int, default = 0.7
+    prob : int, default = 0.3
            Probability of augmentation occuring at each pass.
-    degrees : int, default = 10
+    degrees : int, default = 5
               Range of possible rotation (-degrees, +degrees). Set to None for
               no rotation.
     translate : float, default = 0.1
                 Range of possible translation. Set to None for no translation.
     scale : tuple, default = (0.9, 1.1)
             Range of possible scaling. Set to None for no scaling.
-    shear : int, default = 10
+    shear : int, default = 5
             Range of possible shear rotation (-shear, +shear). Set to None for
             no shear.
   """
-  def __init__(self, prob=0.7,\
-    degrees=10, translate=0.1,
-    scale=(0.9,1.1), shear=10):
+  def __init__(self, prob=0.3,\
+    degrees=5, translate=0.1,
+    scale=(0.9,1.1), shear=5):
     super().__init__() 
     self.prob = prob
     self.degrees = degrees
@@ -128,10 +128,10 @@ class SpeckleNoise(object):
            Mean of distribution for random sampling
     sigma : int, default = 1
             Standard deviation of distribution for random sampling
-    prob : int, default = 0.7
+    prob : int, default = 0.3
            Probability of augmentation occuring at each pass.
   """
-  def __init__(self, type='speckle', mean=0, sigma=1, prob=0.7):
+  def __init__(self, type='speckle', mean=0, sigma=1, prob=0.3):
     super().__init__()
     self.type = type
     self.mean = mean
@@ -209,7 +209,7 @@ class Smooth(object):
     prob : int, default = 0.7
            Probability of augmentation occuring at each pass.
   """
-  def __init__(self, sigma=1, prob=0.7): 
+  def __init__(self, sigma=1, prob=0.3): 
     super().__init__()
     self.sigma = sigma
     self.prob = prob
@@ -262,7 +262,7 @@ class Flip(object):
   """ Randomly flip image in vertical axis (left and right)
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
-    prob : int, default = 0.7
+    prob : int, default = 0.3
           Probability of augmentation occuring at each pass.
   """
   def __init__(self, prob=0.3):
