@@ -141,7 +141,7 @@ class DenseNet(nn.Module):
     self.normalise = Normalize(0.449, 0.226)
     self.resample = nn.Conv2d(1, 96, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
     self.features = nn.Sequential(*list(model.features)[1:])
-    self.classifier = nn.Sequential(nn.Flatten(), nn.Linear(in_features=2208, out_features=1, bias=True))
+    self.classifier = nn.Sequential(nn.Flatten(), nn.Linear(in_features=2208, out_features=1, bias=True), nn.Sigmoid())
 
   def forward(self, x):
     print(x.shape)
