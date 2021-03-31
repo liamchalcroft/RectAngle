@@ -1,6 +1,8 @@
 import torch
 from torch import nn
 from .modules import UNetBlock, AttentionGate
+from torchvision.models import densenet161
+from torchvision.transforms import Normalize
 
 
 class UNet(nn.Module):
@@ -131,3 +133,30 @@ class UNet(nn.Module):
     x = x[:,:,:58,:52]
     
     return torch.sigmoid(x)
+
+
+class DenseNet(nn.Module):
+  def __init__(self, model):
+    super().__init__()
+    self.normalise = Normalize(0.449, 0.226)
+    self.resample = nn.Conv2d(1, 96, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    self.features = nn.Sequential(*list(model.features)[1:])
+    self.classifier = nn.Linear(in_features=2208, out_features=2, bias=True)
+
+  def forward(self, x):
+    x = self.normalise(x)
+    x = self.resample(x)
+    x = self.features(x)
+    x = self.classifier(x)
+    return x
+
+
+def MakeDenseNet(freeze_weights=True):
+  cnn = densenet161(pretrained=True)
+
+  if freeze_weights:
+    for param in cnn.parameters():
+      param.requires_grad=False
+
+  return DenseNet(cnn)
+  
