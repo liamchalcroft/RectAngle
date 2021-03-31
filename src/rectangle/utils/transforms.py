@@ -126,12 +126,12 @@ class SpeckleNoise(object):
                   * 'gauss' : Additive gaussian noise
     mean : int, default = 0
            Mean of distribution for random sampling
-    sigma : int, default = 1
+    sigma : int, default = 0.01
             Standard deviation of distribution for random sampling
     prob : int, default = 0.3
            Probability of augmentation occuring at each pass.
   """
-  def __init__(self, type='speckle', mean=0, sigma=1, prob=0.3):
+  def __init__(self, type='speckle', mean=0, sigma=0.01, prob=0.3):
     super().__init__()
     self.type = type
     self.mean = mean
@@ -204,12 +204,12 @@ class Smooth(object):
   """ Spatial smoothing of image. Currently only Gaussian smoothing.
   Input arguments:
     image : Torch Tensor [B,C,H,W], dtype = int
-    sigma : int, default = 1
+    sigma : int, default = 0.01
             Standard deviation of smoothing kernel
     prob : int, default = 0.7
            Probability of augmentation occuring at each pass.
   """
-  def __init__(self, sigma=1, prob=0.3): 
+  def __init__(self, sigma=0.01, prob=0.3): 
     super().__init__()
     self.sigma = sigma
     self.prob = prob
