@@ -86,8 +86,8 @@ class Accuracy(object):
     super().__init__()
 
   def __call__(self, inputs, targets):
-    inputs = inputs.view(-1).float()
-    targets = targets.view(-1).float()
+    # inputs = inputs.view(-1).float()
+    # targets = targets.view(-1).float()
 
     correct = (torch.round(inputs) == targets).sum().item()
 
