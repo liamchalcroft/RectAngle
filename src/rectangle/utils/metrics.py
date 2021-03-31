@@ -78,3 +78,16 @@ class Recall(object):
 
     return (TP + self.eps)/(TP + FP + self.eps)
     
+
+class Accuracy(object):
+  """ Simple binary classifier accuracy
+  """
+  def __init__(self):
+    super().__init__()
+
+  def __call__(self, inputs, targets):
+    inputs = inputs.view(-1).float()
+    targets = targets.view(-1).float()
+
+    return (inputs == targets).mean().item()
+    
