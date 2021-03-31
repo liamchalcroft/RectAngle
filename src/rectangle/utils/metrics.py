@@ -91,4 +91,4 @@ class Accuracy(object):
 
     correct = (torch.round(inputs) == targets).sum().item()
 
-    return correct / inputs.size()
+    return correct / inputs.size(0)
