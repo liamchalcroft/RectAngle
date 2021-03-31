@@ -451,12 +451,12 @@ class ClassTrainer(nn.Module):
             loss_log_ensemble = np.empty((len(self.model_ensemble),\
                 self.nb_epochs))
             loss_log_ensemble[:] = np.nan
-            dice_log_ensemble = np.empty((len(self.model_ensemble),\
+            acc_log_ensemble = np.empty((len(self.model_ensemble),\
                 int(self.nb_epochs//self.val_interval)))
-            dice_log_ensemble[:] = np.nan
+            acc_log_ensemble[:] = np.nan
             for i, model in enumerate(self.model_ensemble):
                 early_ = 0
-                dice_max = 0
+                acc_max = 0
                 train = train_list[i]
                 val = val_list[i]
                 opt_ = self.opt[i]
@@ -483,9 +483,9 @@ class ClassTrainer(nn.Module):
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
-                        print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log_ensemble[i,epoch]))
+                        print('Epoch #{}: Mean acc Loss: {}'.format(epoch, loss_log_ensemble[i,epoch]))
                     if epoch % self.val_interval == 0:
-                        dice_epoch = []
+                        acc_epoch = []
                         model.eval()
                         with torch.no_grad():
                             for input, label in val:
@@ -497,13 +497,13 @@ class ClassTrainer(nn.Module):
                                 if val_post:
                                     for aug in val_post:
                                         pred = aug(pred)
-                                dice_metric = self.metric(pred, label)
-                                dice_epoch.append(dice_metric)
-                            dice_log_ensemble[i,int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
+                                acc_metric = self.metric(pred, label)
+                                acc_epoch.append(acc_metric)
+                            acc_log_ensemble[i,int(epoch//self.val_interval)] = np.nanmean(acc_epoch)
                         if epoch >= self.val_interval:
-                            if dice_log_ensemble[i,int(epoch//self.val_interval)] > dice_max:
+                            if acc_log_ensemble[i,int(epoch//self.val_interval)] > acc_max:
                                 early_ = 0
-                                dice_max = dice_log_ensemble[i,int(epoch//self.val_interval)]
+                                acc_max = acc_log_ensemble[i,int(epoch//self.val_interval)]
                                 path_ = path.join(self.outdir,\
                                     'model',oname,'ensemble/model_{}'.format(i))
                                 if not path.exists(path_):
@@ -512,15 +512,15 @@ class ClassTrainer(nn.Module):
                             else:
                                 early_ += 1
                         if epoch % self.print_interval == 0:
-                            print('Mean Validation Dice: {}'.format(dice_log_ensemble[i,int(epoch//self.val_interval)]))
+                            print('Mean Validation acc: {}'.format(acc_log_ensemble[i,int(epoch//self.val_interval)]))
                 print('Finished training of model #{}'.format(i))
         else:
             loss_log = np.empty(self.nb_epochs)
             loss_log[:] = np.nan
-            dice_log = np.empty(int(self.nb_epochs//self.val_interval))
-            dice_log[:] = np.nan
+            acc_log = np.empty(int(self.nb_epochs//self.val_interval))
+            acc_log[:] = np.nan
             early_ = 0
-            dice_max = 0
+            acc_max = 0
             model = self.model
             for epoch in range(self.nb_epochs):
                 if self.early_stop:
@@ -544,9 +544,9 @@ class ClassTrainer(nn.Module):
                     loss_epoch.append(loss_.item())
                 loss_log[epoch] = np.nanmean(loss_epoch)
                 if epoch % self.print_interval == 0:
-                    print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log[epoch]))
+                    print('Epoch #{}: Mean acc Loss: {}'.format(epoch, loss_log[epoch]))
                 if epoch % self.val_interval == 0:
-                    dice_epoch = []
+                    acc_epoch = []
                     model.eval()
                     with torch.no_grad():
                         for input, label in val:
@@ -558,15 +558,15 @@ class ClassTrainer(nn.Module):
                             if val_post:
                                 for aug in val_post:
                                     pred = aug(pred)
-                            dice_metric = self.metric(pred, label)
-                            dice_epoch.append(dice_metric)
-                        dice_log[int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
+                            acc_metric = self.metric(pred, label)
+                            acc_epoch.append(acc_metric)
+                        acc_log[int(epoch//self.val_interval)] = np.nanmean(acc_epoch)
                     if epoch % self.print_interval == 0:
-                        print('Mean Validation Dice: {}'.format(dice_log[int(epoch//self.val_interval)]))
+                        print('Mean Validation acc: {}'.format(acc_log[int(epoch//self.val_interval)]))
                     if epoch >= self.val_interval:
-                        if dice_log[int(epoch//self.val_interval)] > dice_max:
+                        if acc_log[int(epoch//self.val_interval)] > acc_max:
                             early_ = 0
-                            dice_max = dice_log[int(epoch//self.val_interval)]
+                            acc_max = acc_log[int(epoch//self.val_interval)]
                             path_ = path.join(self.outdir,\
                                 'model',oname)
                             if not path.exists(path_):
@@ -585,13 +585,13 @@ class ClassTrainer(nn.Module):
                 np.nanmean(loss_log_ensemble, axis=0)-np.nanstd(loss_log_ensemble, axis=0),\
                 alpha=0.3)
             plt.plot(np.linspace(0,self.nb_epochs,\
-                int(self.nb_epochs//self.val_interval), dtype=int), np.nanmean(dice_log_ensemble, axis=0))
+                int(self.nb_epochs//self.val_interval), dtype=int), np.nanmean(acc_log_ensemble, axis=0))
             plt.fill_between(np.linspace(0,self.nb_epochs,int(self.nb_epochs//self.val_interval), dtype=int), \
-                np.nanmean(dice_log_ensemble, axis=0)+np.nanstd(dice_log_ensemble, axis=0),\
-                np.nanmean(dice_log_ensemble, axis=0)-np.nanstd(dice_log_ensemble, axis=0),\
+                np.nanmean(acc_log_ensemble, axis=0)+np.nanstd(acc_log_ensemble, axis=0),\
+                np.nanmean(acc_log_ensemble, axis=0)-np.nanstd(acc_log_ensemble, axis=0),\
                 alpha=0.3)
             plt.xlabel('Epoch #')
-            plt.legend(['Train Loss', 'Validation Dice'])
+            plt.legend(['Train Loss', 'Validation acc'])
             path_ = path.join(self.outdir,\
                                 'training/plots')
             if not path.exists(path_):
@@ -603,15 +603,15 @@ class ClassTrainer(nn.Module):
                 makedirs(path_)
             np.savetxt(path.join(path_, 'loss_{}.csv'.format(oname)),\
                 loss_log_ensemble, delimiter=',')
-            np.savetxt(path.join(path_, 'dice_{}.csv'.format(oname)),\
-                dice_log_ensemble, delimiter=',')
+            np.savetxt(path.join(path_, 'acc_{}.csv'.format(oname)),\
+                acc_log_ensemble, delimiter=',')
         else:
             plt.figure(figsize=(8,6))
             plt.plot(np.linspace(0,self.nb_epochs,self.nb_epochs, dtype=int), loss_log)
             plt.plot(np.linspace(0,self.nb_epochs,\
-                int(self.nb_epochs//self.val_interval), dtype=int), dice_log)
+                int(self.nb_epochs//self.val_interval), dtype=int), acc_log)
             plt.xlabel('Epoch #')
-            plt.legend(['Train Loss', 'Validation Dice'])
+            plt.legend(['Train Loss', 'Validation acc'])
             path_ = path.join(self.outdir,\
                                 'training/plots')
             if not path.exists(path_):
@@ -623,47 +623,5 @@ class ClassTrainer(nn.Module):
                 makedirs(path_)
             np.savetxt(path.join(path_, 'loss_{}.csv'.format(oname)),\
                 loss_log, delimiter=',')
-            np.savetxt(path.join(path_, 'dice_{}.csv'.format(oname)),\
-                dice_log, delimiter=',')
-
-
-    def test(self, test_data, oname=None, 
-    test_pre=None, test_post=None, overlap='contour'):
-        if not oname:
-            oname = date.today()
-            oname = oname.strftime("%b-%d-%Y")
-
-        test = DataLoader(test_data, 1, shuffle=False)
-        dice_log = []
-        prec_log = []
-        rec_log = []
-        precision = Precision()
-        recall = Recall()
-        self.model.eval()
-        with torch.no_grad():
-            for i, (input, label) in enumerate(test):
-                input, label = input.to(self.device), label.to(self.device)
-                if test_pre:
-                    for aug in test_pre:
-                        input = aug(input)
-                if self.ensemble:
-                    pred = [model(input) for model in self.model_ensemble]
-                    pred = torch.cat(pred, dim=0)
-                    pred = torch.mean(pred, dim=0)
-                else:
-                    pred = self.model(input)
-                if test_post:
-                    for aug in test_post:
-                        pred = aug(pred)
-                dice_metric = self.metric(pred, label)
-                dice_log.append(dice_metric)
-                prec_log.append(precision(pred, label))
-                rec_log.append(recall(pred, label))
-
-                input_img = input.detach().cpu().numpy()
-                pred_img = pred.detach().cpu().numpy()
-                label_img = label.detach().cpu().numpy()
-
-                input_img = np.squeeze(input_img)
-                pred_img = np.squeeze(pred_img)
-                label_img = np.squeeze(label_img)
+            np.savetxt(path.join(path_, 'acc_{}.csv'.format(oname)),\
+                acc_log, delimiter=',')
