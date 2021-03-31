@@ -152,7 +152,6 @@ class ClassifyDataLoader(torch.utils.data.Dataset):
       num_frames.append(int(frames[-1]))
 
     self.num_frames = num_frames
-    self.label = label
 
   def __len__(self):
         return self.num_subjects
@@ -174,4 +173,3 @@ class ClassifyDataLoader(torch.utils.data.Dataset):
     else:
       label = torch.tensor(0)
     return(image, label)
-    
