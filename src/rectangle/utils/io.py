@@ -242,7 +242,7 @@ class TestPlotLoader(torch.utils.data.Dataset):
     return(image, label)
 
 
-class PreScreenLoaderH5DataLoader(torch.utils.data.Dataset):
+class PreScreenLoader(torch.utils.data.Dataset):
   def __init__(self, model, file, keys=None, label='random', threshold=0.5):
     """ Dataloader for hdf5 files.
     Input arguments:
