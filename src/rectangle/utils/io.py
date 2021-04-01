@@ -173,3 +173,148 @@ class ClassifyDataLoader(torch.utils.data.Dataset):
     else:
       label = torch.tensor([0.0])
     return(image, label)
+
+
+class TestPlotLoader(torch.utils.data.Dataset):
+  def __init__(self, file, keys=None, label='vote'):
+    """ Dataloader for hdf5 files, always fixed to first frame to compare plots
+    Input arguments:
+      file : h5py File object
+             Loaded using h5py.File(path : string)
+      keys : list, default = None
+             Keys from h5py file to use. Useful for train-val-test split.
+             If None, keys generated from entire file.
+      label : string, default = 'random'
+             Method for loading segmentation labels.
+             Options:
+                    * 'random' - randomly select one of the available labels
+                    * 'vote' - calculate pixel-wise majority vote from available labels
+    """
+    
+    super().__init__()
+
+    self.file = file
+    if not keys:
+      keys = list(file.keys())
+    split_keys = [key.split('_') for key in keys]
+    start_subj = int(split_keys[0][1])
+    last_subj = int(split_keys[-1][1])
+    self.num_subjects = last_subj - start_subj
+    self.subjects = np.linspace(start_subj, last_subj, 
+                                self.num_subjects+1, dtype=int)
+    num_frames = []
+    for subj in range(start_subj, last_subj):
+      subj_string = str(subj).zfill(4)
+      frames = [key[2] for key in split_keys if key[1] == subj_string]
+      num_frames.append(int(frames[-1]))
+
+    self.num_frames = num_frames
+    self.label = label
+
+  def __len__(self):
+        return self.num_subjects
+  
+  def __getitem__(self, index):
+    subj_ix = self.subjects[index]
+    frame_ix = 0
+    label_ix = random.randint(0, 2)
+    image = torch.unsqueeze(torch.tensor(
+        self.file['frame_%04d_%03d' % (subj_ix, 
+                                       frame_ix
+                                       )][()].astype('float32')), dim=0)
+    if self.label == 'random':                                
+      label = torch.unsqueeze(torch.tensor(
+          self.file['label_%04d_%03d_%02d' % (subj_ix, 
+                                              frame_ix, 
+                                              label_ix
+                                              )][()].astype(int)), dim=0)
+    elif self.label == 'vote':
+      label_batch = torch.cat([torch.unsqueeze(torch.tensor(
+          self.file['label_%04d_%03d_%02d' % (subj_ix, frame_ix, label_ix
+            )][()].astype('float32')), dim=0) for label_ix in range(3)])
+      label_mean = torch.unsqueeze(torch.mean(label_batch, dim=0), dim=0)
+      label = torch.round(label_mean).int()
+    elif self.label == 'mean':
+      label_batch = torch.cat([torch.unsqueeze(torch.tensor(
+          self.file['label_%04d_%03d_%02d' % (subj_ix, frame_ix, label_ix
+            )][()].astype('float32')), dim=0) for label_ix in range(3)])
+      label = torch.unsqueeze(torch.mean(label_batch, dim=0), dim=0)
+    return(image, label)
+
+
+class PreScreenLoaderH5DataLoader(torch.utils.data.Dataset):
+  def __init__(self, model, file, keys=None, label='random', threshold=0.5):
+    """ Dataloader for hdf5 files.
+    Input arguments:
+      model : Torch nn.Module object
+      file : h5py File object
+             Loaded using h5py.File(path : string)
+      keys : list, default = None
+             Keys from h5py file to use. Useful for train-val-test split.
+             If None, keys generated from entire file.
+      label : string, default = 'random'
+             Method for loading segmentation labels.
+             Options:
+                    * 'random' - randomly select one of the available labels
+                    * 'vote' - calculate pixel-wise majority vote from available labels
+    """
+    
+    super().__init__()
+
+    self.file = file
+    if not keys:
+      keys = list(file.keys())
+    split_keys = [key.split('_') for key in keys]
+    start_subj = int(split_keys[0][1])
+    last_subj = int(split_keys[-1][1])
+    self.num_subjects = last_subj - start_subj
+    self.subjects = np.linspace(start_subj, last_subj, 
+                                self.num_subjects+1, dtype=int)
+    num_frames = []
+    for subj in range(start_subj, last_subj):
+      subj_string = str(subj).zfill(4)
+      frames = [key[2] for key in split_keys if key[1] == subj_string]
+      num_frames.append(int(frames[-1]))
+
+    self.num_frames = num_frames
+    self.label = label
+    self.model = model
+    self.threshold = threshold
+
+  def __len__(self):
+        return self.num_subjects
+  
+  def __getitem__(self, index):
+    subj_ix = self.subjects[index]
+    label_ix = random.randint(0, 2)
+    prostate = 'no'
+    while prostate == 'no':
+      frame_ix = random.randint(0, self.num_frames[index])
+      image = torch.unsqueeze(torch.tensor(
+          self.file['frame_%04d_%03d' % (subj_ix, 
+                                        frame_ix
+                                        )][()].astype('float32')), dim=0)
+      with torch.no_grad():
+        screen_pred = self.model(image)
+        screen_pred = screen_pred.item()
+      if screen_pred > self.threshold:
+        prostate = 'yes'
+
+    if self.label == 'random':                                
+      label = torch.unsqueeze(torch.tensor(
+          self.file['label_%04d_%03d_%02d' % (subj_ix, 
+                                              frame_ix, 
+                                              label_ix
+                                              )][()].astype(int)), dim=0)
+    elif self.label == 'vote':
+      label_batch = torch.cat([torch.unsqueeze(torch.tensor(
+          self.file['label_%04d_%03d_%02d' % (subj_ix, frame_ix, label_ix
+            )][()].astype('float32')), dim=0) for label_ix in range(3)])
+      label_mean = torch.unsqueeze(torch.mean(label_batch, dim=0), dim=0)
+      label = torch.round(label_mean).int()
+    elif self.label == 'mean':
+      label_batch = torch.cat([torch.unsqueeze(torch.tensor(
+          self.file['label_%04d_%03d_%02d' % (subj_ix, frame_ix, label_ix
+            )][()].astype('float32')), dim=0) for label_ix in range(3)])
+      label = torch.unsqueeze(torch.mean(label_batch, dim=0), dim=0)
+    return(image, label)
