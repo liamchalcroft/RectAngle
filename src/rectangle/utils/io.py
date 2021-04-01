@@ -290,15 +290,15 @@ class PreScreenLoader(torch.utils.data.Dataset):
     prostate = 'no'
     while prostate == 'no':
       frame_ix = random.randint(0, self.num_frames[index])
-      image = torch.unsqueeze(torch.unsqueeze(torch.tensor(
+      image = torch.unsqueeze(torch.tensor(
           self.file['frame_%04d_%03d' % (subj_ix, 
                                         frame_ix
-                                        )][()].astype('float32')),
-                                         dim=0), dim=0)
+                                        )][()].astype('float32')), dim=0)
+      image_screen = torch.unsqueeze(image, dim=0)
       device = next(self.model.parameters()).device
-      image = image.to(device)
+      image_screen = image_screen.to(device)
       with torch.no_grad():
-        screen_pred = self.model(image)
+        screen_pred = self.model(image_screen)
         screen_pred = screen_pred.item()
       if screen_pred > self.threshold:
         prostate = 'yes'
