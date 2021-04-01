@@ -147,7 +147,7 @@ class DenseNet(nn.Module):
     x = self.normalise(x)
     x = self.resample(x)
     x = self.features(x)
-    x = torch.squeeze(x)
+    # x = torch.squeeze(x)
     x = self.classifier(x)
     return x
 
