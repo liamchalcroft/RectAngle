@@ -297,10 +297,9 @@ class PreScreenLoader(torch.utils.data.Dataset):
       image_screen = torch.unsqueeze(image, dim=0)
       device = next(self.model.parameters()).device
       image_screen = image_screen.to(device)
-      with torch.no_grad():
-        screen_pred = self.model(image_screen)
-        screen_pred = screen_pred.item()
-      if screen_pred > self.threshold:
+      self.model.eval()
+      screen_pred = self.model(image_screen)
+      if screen_pred.item() > self.threshold:
         prostate = 'yes'
 
     if self.label == 'random':                                
