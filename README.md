@@ -1,4 +1,6 @@
 # RectAngle
+*WIP: Now adding TPU support*
+
 Segmentation and classification tool for trans-rectal B-mode ultrasound images.
 
 *Submitted as coursework for MPHY0041: Machine Learning in Medical Imaging.*
