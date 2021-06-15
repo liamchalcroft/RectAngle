@@ -86,7 +86,7 @@ class H5DataLoader(torch.utils.data.Dataset):
     self.label = label
 
   def __len__(self):
-        return self.num_subjects
+    return self.num_subjects
   
   def __getitem__(self, index):
     subj_ix = self.subjects[index]
