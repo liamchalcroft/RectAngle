@@ -83,13 +83,6 @@ class H5DataLoader(torch.utils.data.Dataset):
     self.num_subjects = last_subj - start_subj
     self.subjects = np.linspace(start_subj, last_subj, 
                                 self.num_subjects+1, dtype=int)
-    num_frames = []
-    for subj in range(start_subj, last_subj):
-      subj_string = str(subj).zfill(4)
-      frames = [key[2] for key in split_keys if key[1] == subj_string]
-      num_frames.append(int(frames[-1]))
-
-    self.num_frames = num_frames
     self.label = label
 
   def __len__(self):
@@ -97,27 +90,24 @@ class H5DataLoader(torch.utils.data.Dataset):
   
   def __getitem__(self, index):
     subj_ix = self.subjects[index]
-    frame_ix = random.randint(0, self.num_frames[index])
     label_ix = random.randint(0, 2)
     image = torch.unsqueeze(torch.tensor(
-        self.file['frame_%04d_%03d' % (subj_ix, 
-                                       frame_ix
+        self.file['frame_%05d' % (subj_ix, 
                                        )][()].astype('float32')), dim=0)
     if self.label == 'random':                                
       label = torch.unsqueeze(torch.tensor(
-          self.file['label_%04d_%03d_%02d' % (subj_ix, 
-                                              frame_ix, 
-                                              label_ix
-                                              )][()].astype(int)), dim=0)
+          self.file['label_%05d_%02d' % (subj_ix, 
+                                          label_ix
+                                          )][()].astype(int)), dim=0)
     elif self.label == 'vote':
       label_batch = torch.cat([torch.unsqueeze(torch.tensor(
-          self.file['label_%04d_%03d_%02d' % (subj_ix, frame_ix, label_ix
+          self.file['label_%05d_%02d' % (subj_ix, label_ix
             )][()].astype('float32')), dim=0) for label_ix in range(3)])
       label_mean = torch.unsqueeze(torch.mean(label_batch, dim=0), dim=0)
       label = torch.round(label_mean).int()
     elif self.label == 'mean':
       label_batch = torch.cat([torch.unsqueeze(torch.tensor(
-          self.file['label_%04d_%03d_%02d' % (subj_ix, frame_ix, label_ix
+          self.file['label_%05d_%02d' % (subj_ix, label_ix
             )][()].astype('float32')), dim=0) for label_ix in range(3)])
       label = torch.unsqueeze(torch.mean(label_batch, dim=0), dim=0)
     return(image, label)
