@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, random_split, ConcatDataset
 import numpy as np
 from scipy.ndimage import laplace
+import torch_xla.core.xla_model as xm
 
 
 class Trainer(nn.Module):
@@ -112,7 +113,10 @@ class Trainer(nn.Module):
                                 pred = aug(pred)
                         loss_ = self.loss(pred, label)
                         loss_.backward()
-                        opt_.step()
+                        if model.device.type == 'xla':
+                            xm.optimizer_step(opt_, barrier=True)
+                        else:
+                            opt_.step()
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
@@ -479,7 +483,10 @@ class ClassTrainer(nn.Module):
                                 pred = aug(pred)
                         loss_ = self.loss(pred, label)
                         loss_.backward()
-                        opt_.step()
+                        if model.device.type == 'xla':
+                            xm.optimizer_step(opt_, barrier=True)
+                        else:
+                            opt_.step()
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
