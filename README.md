@@ -5,8 +5,6 @@ Segmentation and classification tool for trans-rectal B-mode ultrasound images.
 
 This package contains PyTorch-based implementations of a U-Net based segmentation model, and a DenseNet-based classification model, for the simultaneous detection and segmentation of prostate in rectal b-mode ultrasound images.
 
-**NEED TO WRITE UP REST OF DETAILS**
-
 ## Installation
 
 To install from command line, use the following git command:
@@ -25,8 +23,8 @@ Once this is activated, the package may be installed using the *setup.py* file:
 
 >pip install .
 
-Following this, training/inference may be performed from the command line using the scripts *train.py* and *predict.py* respectively.
+Following this, training/inference may be performed using objects in the *train* module.
 
-An interactive notebook used for experiments in the associated report is available:
+To familiarise with the code used, an interactive notebook used for experiments in the associated report is available below. Please note that data used is proprietary and so has been withheld from the published repository.
 
-<a href="https://colab.research.google.com/github/liamchalcroft/RectAngle/blob/main/colab_from_package.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+<a href="https://colab.research.google.com/github/liamchalcroft/RectAngle/blob/main/demo.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
