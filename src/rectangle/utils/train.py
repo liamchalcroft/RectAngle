@@ -15,7 +15,7 @@ import torch_xla.core.xla_model as xm
 class Trainer(nn.Module):
     def __init__(self, model, nb_epochs=200, outdir='./logs',
      loss=DiceLoss(), metric=DiceLoss(), opt='adam',
-     print_interval=1, val_interval=5, device='cuda',
+     print_interval=1, val_interval=2, device='cuda',
      early_stop=5, ensemble=None):
 
         super().__init__()
