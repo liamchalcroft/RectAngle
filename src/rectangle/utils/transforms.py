@@ -139,10 +139,7 @@ class SpeckleNoise(object):
     self.prob = prob
 
   def __call__(self, image):
-    if image.is_cuda:
-      device = torch.device('cuda')
-    else:
-      device = torch.device('cpu')
+    device = image.device
     rand_ = random.uniform(0,1)
     if rand_ < self.prob:
       max = torch.amax(image, dim=(1,2,3))
@@ -216,10 +213,7 @@ class Smooth(object):
 
   def __call__(self, image):
     # Ideally add Savitzky-Golay filter instead of Gauss
-    if image.is_cuda:
-      device = torch.device('cuda')
-    else:
-      device = torch.device('cpu')
+    device = image.device
     rand_ = random.uniform(0,1)
     if rand_ < self.prob:
       max = torch.amax(image, dim=(1,2,3)).to(device)
@@ -298,10 +292,7 @@ class KeepLargestComponent(object):
     super().__init__()
 
   def __call__(self, image):
-    if image.is_cuda:
-      device = torch.device('cuda')
-    else:
-      device = torch.device('cpu')
+    device = image.device
     image_batch_ = torch.squeeze(image, dim=1).to(device)
     image_batch_ = image_batch_.detach().cpu().numpy()
     batch_size_ = image_batch_.shape[0]
