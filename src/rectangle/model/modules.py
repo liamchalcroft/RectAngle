@@ -63,7 +63,7 @@ class AttentionGate(nn.Module):
     )
 
     self.activation_weight = nn.Sequential(
-        nn.Conv2d(encoder_channels_channels, intermediate_channels, kernel_size=1),
+        nn.Conv2d(encoder_channels, intermediate_channels, kernel_size=1),
         nn.BatchNorm2d(intermediate_channels)
     )
 
