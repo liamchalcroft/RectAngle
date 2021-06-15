@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 from .modules import UNetBlock, AttentionGate
 from torchvision.models import densenet161
 from torchvision.transforms import Normalize
@@ -118,13 +119,15 @@ class UNet(nn.Module):
     enc_features = enc_features[::-1]
 
     for i in range(len(self.dec_list)):
-      if self.attn_list:
-        atnn_enc = self.attn_list[i](enc_features[i], x)
+      x_enc = enc_features[i]        
       x = self.up_list[i](x)
+      dY = x_enc.shape[2] - x.shape[2]
+      dX = x_enc.shape[3] - x.shape[3]
+      x = F.pad(x, [dX//2, dX - dX//2,
+                    dY//2, dY - dY//2])
       if self.attn_list:
-        x = torch.cat((x, attn_enc), dim=1)
-      else:
-        x = torch.cat((x, enc_features[i]), dim=1)
+        x_enc = self.attn_list[i](x_enc, x)
+      x = torch.cat((x, x_enc), dim=1)
       x = self.dec_list[i](x)
 
     x = self.head(x)
