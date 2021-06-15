@@ -99,12 +99,12 @@ class UNet(nn.Module):
     
     
   def forward(self, x):
-    # pad images to (64,64)
-    shape = list(x.shape)
-    shape[2] = shape[3] = 64
-    pad_x = torch.zeros(shape)
-    pad_x[:,:,:58,:52] = x
-    x = pad_x.to(self.device)
+    # # pad images to (64,64)
+    # shape = list(x.shape)
+    # shape[2] = shape[3] = 64
+    # pad_x = torch.zeros(shape)
+    # pad_x[:,:,:58,:52] = x
+    # x = pad_x.to(self.device)
 
     enc_features = []
 
@@ -129,8 +129,8 @@ class UNet(nn.Module):
 
     x = self.head(x)
 
-    # crop to original size of (58,52)
-    x = x[:,:,:58,:52]
+    # # crop to original size of (58,52)
+    # x = x[:,:,:58,:52]
     
     return torch.sigmoid(x)
 
