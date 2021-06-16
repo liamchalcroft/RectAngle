@@ -10,66 +10,77 @@ parser = argparse.ArgumentParser(prog='train',
 parser.add_argument('train',
                     metavar='tr',
                     type=str,
+                    action='store',
                     default='./miccai_us_data/train.h5',
                     help='Path to training data. Note that for ensemble this should include train + val pre-split.')
 
 parser.add_argument('val',
                     metavar='v',
                     type=str,
+                    action='store',
                     default=None,
                     help='Path to validation data.')
 
 parser.add_argument('test',
                     metavar='te',
                     type=str,
+                    action='store',
                     default=None,
                     help='Path to test data.')
 
 parser.add_argument('label',
                     metavar='l',
                     type=str,
+                    action='store',
                     default='random',
                     help="Label sampling strategy. Should be string of {'random', 'vote', 'mean'}.")
 
 parser.add_argument('ensemble',
                     metavar='en',
                     type=str,
+                    action='store',
                     default=None,
                     help='Number of ensembled models.')
 
 parser.add_argument('gate',
                     metavar='g',
                     type=str,
+                    action='store',
                     default=None,
                     help='(Optional) Attention gating.')
 
 parser.add_argument('odir',
                     metavar='o',
                     type=str,
+                    action='store',
                     default='./',
                     help='Path to output folder.')
 
 parser.add_argument('depth',
                     metavar='d',
                     type=str,
+                    action='store',
                     default='5',
                     help='Depth of U-Net architecture used.')
 
 parser.add_argument('epochs',
                     metavar='ep',
                     type=str,
+                    action='store',
                     default='200',
                     help='Max number of training epochs per model.')
 
 parser.add_argument('batch',
                     metavar='b',
                     type=str,
+                    action='store',
                     default='32',
                     help='Batch size. Note images are large (~400x~300).')
 
 parser.add_argument('classifier',
                     metavar='c',
                     type=bool,
+                    action='store',
                     default=True,
                     help='Use of classifier for pre-screening. If selected will train without and then perform test without + with.')
 
@@ -147,4 +158,3 @@ if args.classifier:
             trainer.test(test_screen_data, test_pre=[rect.utils.transforms.z_score()], 
                         test_post=[rect.utils.transforms.Binary(), rect.utils.transforms.KeepLargestComponent()], oname='class_thresh_{}'.format(i))
 
-                        
