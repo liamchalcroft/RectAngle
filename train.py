@@ -7,78 +7,89 @@ import argparse
 parser = argparse.ArgumentParser(prog='train',
                                 description="Train RectAngle model. See list of available arguments for more info.")
 
-parser.add_argument('train',
-                    metavar='tr',
+parser.add_argument('--train',
+                    '--tr',
+                    metavar='train',
                     type=str,
                     action='store',
                     default='./miccai_us_data/train.h5',
                     help='Path to training data. Note that for ensemble this should include train + val pre-split.')
 
-parser.add_argument('val',
-                    metavar='v',
+parser.add_argument('--val',
+                    '--v',
+                    metavar='val',
                     type=str,
                     action='store',
                     default=None,
                     help='Path to validation data.')
 
-parser.add_argument('test',
-                    metavar='te',
+parser.add_argument('--test',
+                    '--te',
+                    metavar='test',
                     type=str,
                     action='store',
                     default=None,
                     help='Path to test data.')
 
-parser.add_argument('label',
-                    metavar='l',
+parser.add_argument('--label',
+                    '--l',
+                    metavar='label',
                     type=str,
                     action='store',
                     default='random',
                     help="Label sampling strategy. Should be string of {'random', 'vote', 'mean'}.")
 
-parser.add_argument('ensemble',
-                    metavar='en',
+parser.add_argument('--ensemble',
+                    '--en',
+                    metavar='ensemble',
                     type=str,
                     action='store',
                     default=None,
                     help='Number of ensembled models.')
 
-parser.add_argument('gate',
-                    metavar='g',
+parser.add_argument('--gate',
+                    '--g',
+                    metavar='gate',
                     type=str,
                     action='store',
                     default=None,
                     help='(Optional) Attention gating.')
 
-parser.add_argument('odir',
-                    metavar='o',
+parser.add_argument('--odir',
+                    '--o',
+                    metavar='odir',
                     type=str,
                     action='store',
                     default='./',
                     help='Path to output folder.')
 
-parser.add_argument('depth',
-                    metavar='d',
+parser.add_argument('--depth',
+                    '--d',
+                    metavar='depth',
                     type=str,
                     action='store',
                     default='5',
                     help='Depth of U-Net architecture used.')
 
-parser.add_argument('epochs',
-                    metavar='ep',
+parser.add_argument('--epochs',
+                    '--ep',
+                    metavar='epochs',
                     type=str,
                     action='store',
                     default='200',
                     help='Max number of training epochs per model.')
 
-parser.add_argument('batch',
-                    metavar='b',
+parser.add_argument('--batch',
+                    '--b',
+                    metavar='batch',
                     type=str,
                     action='store',
                     default='32',
                     help='Batch size. Note images are large (~400x~300).')
 
-parser.add_argument('classifier',
-                    metavar='c',
+parser.add_argument('--classifier',
+                    '--c',
+                    metavar='classifier',
                     type=bool,
                     action='store',
                     default=True,
