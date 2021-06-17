@@ -1,7 +1,6 @@
 ## CLI for running training
 
 import os
-import sys
 import argparse
 
 parser = argparse.ArgumentParser(prog='train',
@@ -95,6 +94,15 @@ parser.add_argument('--classifier',
                     default=True,
                     help='Use of classifier for pre-screening. If selected will train without and then perform test without + with.')
 
+parser.add_argument('--seed',
+                    '--s',
+                    metavar='seed',
+                    type=str,
+                    action='store',
+                    default=None,
+                    help='Random seed for training.')
+
+
 args = parser.parse_args()
 
 ## convert arguments to useable form
@@ -104,15 +112,18 @@ else:
     ensemble = None
 
 ## run training
-
 import rectangle as rect
 import h5py
-import matplotlib.pyplot as plt
 import torch
-from scipy.stats import linregress
+import random
 import numpy as np
-from datetime import date
-import os
+
+# set seeds for repeatable results
+if args.seed:
+    seed = int(args.seed)
+    torch.manual_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)
 
 f_train = h5py.File(args.train, 'r')
 train_data = rect.utils.io.H5DataLoader(f_train, label=args.label)
