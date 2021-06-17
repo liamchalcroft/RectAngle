@@ -15,7 +15,7 @@ class Trainer(nn.Module):
     def __init__(self, model, nb_epochs=200, outdir='./logs',
      loss=DiceLoss(), metric=DiceLoss(), opt='adam',
      print_interval=1, val_interval=5, device='cuda',
-     early_stop=5, ensemble=None):
+     early_stop=5, lr_schedule=None, ensemble=None):
 
         super().__init__()
 
@@ -53,6 +53,13 @@ class Trainer(nn.Module):
 
         self.opt = opt
 
+        if lr_schedule:
+            if lr_schedule not in ['lambda', 'exponential', 'reduce_on_plateau']:
+                raise ValueError('Available learning rate schedules are LambdaLR, ExponentialLR or ReduceLROnPlateau.')
+            elif self.ensemble:
+                lr_schedule = [lr_schedule for model in self.model_ensemble]
+
+        self.lr_schedule = lr_schedule
 
     def train(self, train_data, val_data=None, oname=None, 
         train_pre=None, train_post=None, train_batch=128, train_shuffle=True,
@@ -93,6 +100,17 @@ class Trainer(nn.Module):
                 train = train_list[i]
                 val = val_list[i]
                 opt_ = self.opt[i]
+                if self.lr_schedule:
+                    lr_schedule_ = self.lr_schedule[i]
+                    if lr_schedule_ == 'lambda':
+                        lr_schedule_ = torch.optim.lr_scheduler.LambdaLR(opt_, lambda epoch: 0.95 ** epoch)
+                    elif lr_schedule_ == 'exponential':
+                        lr_schedule_ = torch.optim.lr_scheduler.ExponentialLR(opt_, 0.95)
+                    else:
+                        lr_schedule_ = torch.optim.lr_scheduler.ReduceLROnPlateau(opt_)
+                else:
+                    lr_schedule_ = None
+
                 print('Beginning training of model #{}'.format(i))
                 for epoch in range(self.nb_epochs):
                     if self.early_stop:
@@ -113,6 +131,8 @@ class Trainer(nn.Module):
                         loss_ = self.loss(pred, label)
                         loss_.backward()
                         opt_.step()
+                        if lr_schedule_ and lr_schedule_ != 'reduce_on_plateau':
+                            lr_schedule_.step()
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
@@ -131,6 +151,8 @@ class Trainer(nn.Module):
                                     for aug in val_post:
                                         pred = aug(pred)
                                 dice_metric = self.metric(pred, label)
+                                if lr_schedule_ == 'reduce_on_plateau':
+                                    lr_schedule_.step(dice_metric)
                                 dice_epoch.append(1 - dice_metric.item())
                             dice_log_ensemble[i,int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
                         if epoch >= self.val_interval:
@@ -155,6 +177,14 @@ class Trainer(nn.Module):
             early_ = 0
             dice_max = 0
             model = self.model
+            if self.lr_schedule:
+                if self.lr_schedule == 'lambda':
+                    self.lr_schedule = torch.optim.lr_scheduler.LambdaLR(self.opt, lambda epoch: 0.95 ** epoch)
+                elif self.lr_schedule == 'exponential':
+                    self.lr_schedule = torch.optim.lr_scheduler.ExponentialLR(self.opt, 0.95)
+                else:
+                    self.lr_schedule = torch.optim.lr_scheduler.ReduceLROnPlateau(self.opt)
+
             for epoch in range(self.nb_epochs):
                 if self.early_stop:
                     if early_ == self.early_stop:
@@ -174,6 +204,8 @@ class Trainer(nn.Module):
                     loss_ = self.loss(pred, label)
                     loss_.backward()
                     self.opt.step()
+                    if self.lr_schedule and self.lr_schedule != 'reduce_on_plateau':
+                        self.lr_schedule.step()
                     loss_epoch.append(loss_.item())
                 loss_log[epoch] = np.nanmean(loss_epoch)
                 if epoch % self.print_interval == 0:
@@ -192,6 +224,8 @@ class Trainer(nn.Module):
                                 for aug in val_post:
                                     pred = aug(pred)
                             dice_metric = self.metric(pred, label)
+                            if self.lr_schedule == 'reduce_on_plateau':
+                                self.lr_schedule.step(dice_metric) # monitors validation loss 
                             dice_epoch.append(1 - dice_metric.item())
                         dice_log[int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
                     if epoch % self.print_interval == 0:
