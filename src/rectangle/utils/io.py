@@ -164,6 +164,55 @@ class ClassifyDataLoader(torch.utils.data.Dataset):
       label = torch.tensor([0.0])
     return(image, label)
 
+class ClassifyDataLoader_v2(torch.utils.data.Dataset):
+
+  def __init__(self, file, keys=None):
+    """ Dataloader for hdf5 files, with labels converted to classifier labels
+    Input arguments:
+      file : h5py File object
+             Loaded using h5py.File(path : string)
+      keys : list, default = None
+             Keys from h5py file to use. Useful for train-val-test split.
+             If None, keys generated from entire file.
+    """
+    
+    super().__init__()
+
+    self.file = file
+    if not keys:
+      keys = list(file.keys())
+    
+    self.split_keys = [key.split('_') for key in keys]
+    start_subj = int(self.split_keys[0][1])
+    last_subj = int(self.split_keys[-1][1])
+    self.num_subjects = (last_subj - start_subj)+ 1  #Add 1 to account for 0 idx python
+    self.subjects = [key[1] for key in self.split_keys if key[0] == 'frame']
+    #self.subjects = np.linspace(start_subj, last_subj, 
+    #                            self.num_subjects+1, dtype=int)
+
+  def __len__(self):
+        return self.num_subjects
+  
+  def __getitem__(self, index):
+    
+    subj_ix = self.subjects[index]
+    image_key = 'frame_' + subj_ix
+    image = torch.unsqueeze(torch.tensor(self.file[image_key][()].astype('float32')), dim=0)
+
+    label_batch = torch.cat([torch.unsqueeze(torch.tensor(
+        self.file[f'label_{subj_ix}_0{label_ix}' ]
+        [()].astype('float32')), dim=0) for label_ix in range(3)])
+    
+    label_vote = torch.sum(label_batch, dim=(1,2))
+    sum_vote = torch.sum(label_vote != 0)
+    
+    #print(sum_vote)
+    if sum_vote >= 2:
+      label = torch.tensor([1.0])
+    else:
+      label = torch.tensor([0.0])
+
+    return(image, label)
 
 class TestPlotLoader(torch.utils.data.Dataset):
   def __init__(self, file, keys=None, label='vote'):
@@ -230,7 +279,6 @@ class TestPlotLoader(torch.utils.data.Dataset):
             )][()].astype('float32')), dim=0) for label_ix in range(3)])
       label = torch.unsqueeze(torch.mean(label_batch, dim=0), dim=0)
     return(image, label)
-
 
 class PreScreenLoader(torch.utils.data.Dataset):
   def __init__(self, model, file, keys=None, label='random', threshold=0.5):
