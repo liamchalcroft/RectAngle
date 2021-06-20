@@ -17,7 +17,7 @@ class Trainer(nn.Module):
     def __init__(self, model, nb_epochs=200, outdir='./logs',
      loss=DiceLoss(), metric=DiceLoss(), opt='adam',
      print_interval=1, val_interval=5, device='cuda',
-     early_stop=5, lr_schedule=None, ensemble=None):
+     early_stop=5, lr_schedule=None, ensemble=None): 
 
         super().__init__()
 
@@ -166,20 +166,16 @@ class Trainer(nn.Module):
 
                             ## show some (e.g.,10) example images in tensorboard
                             ex_num = 10
-                            ex_label = label[:ex_num]
-                            ex_pred = pred[:ex_num]
+                            ex_label = label[:ex_num,0]
+                            ex_pred = pred[:ex_num,0]
+                            ex_image = torch.cat([ex_label,ex_pred], dim=2)
 
-                            ex_labels = torch.empty(0).to(self.device)
-                            ex_pres = torch.empty(0).to(self.device)
-                            for i in range(ex_num):
-                                ex_labels = torch.cat([ex_labels,ex_label[i]], dim=1)
-                                ex_preds = torch.cat([ex_labels,ex_label[i]], dim=1)
-                            ex_images = torch.cat([ex_labels,ex_preds], dim=0)
-                            image_grid = (make_grid(ex_images, nrow=ex_num)[0]+0.5)/ex_num                       
+                            ex_images = ex_image.reshape(-1,ex_image.shape[2])
+                            image_grid = (make_grid(ex_images, nrow=ex_num)[0]+0.5)/ex_num                     
                             self.writer.add_images(
                                 "val/example_images_ensemble",
                                 image_grid,
-                                self.trainer.global_step,
+                                epoch,
                                 dataformats="HW",
                             )
 
@@ -265,20 +261,16 @@ class Trainer(nn.Module):
 
                         ## show some (e.g.,10) example images in tensorboard
                         ex_num = 10
-                        ex_label = label[:ex_num]
-                        ex_pred = pred[:ex_num]
+                        ex_label = label[:ex_num,0]
+                        ex_pred = pred[:ex_num,0]
+                        ex_image = torch.cat([ex_label,ex_pred], dim=2)
 
-                        ex_labels = torch.empty(0).to(self.device)
-                        ex_pres = torch.empty(0).to(self.device)
-                        for i in range(ex_num):
-                            ex_labels = torch.cat([ex_labels,ex_label[i]], dim=1)
-                            ex_preds = torch.cat([ex_labels,ex_label[i]], dim=1)
-                        ex_images = torch.cat([ex_labels,ex_preds], dim=0)
+                        ex_images = ex_image.reshape(-1,ex_image.shape[2])
                         image_grid = (make_grid(ex_images, nrow=ex_num)[0]+0.5)/ex_num                       
                         self.writer.add_images(
                             "val/example_images",
                             image_grid,
-                            self.trainer.global_step,
+                            epoch,
                             dataformats="HW",
                         )
 
