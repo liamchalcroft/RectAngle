@@ -20,13 +20,13 @@ parser.add_argument('--val',
                     default=None,
                     help='Path to validation data.')
 
-parser.add_argument('--label',
-                    '--l',
-                    metavar='label',
+parser.add_argument('--test',
+                    '--te',
+                    metavar='test',
                     type=str,
                     action='store',
-                    default='random',
-                    help="Label sampling strategy. Should be string of {'random', 'vote', 'mean'}.")
+                    default=None,
+                    help='Path to test data.')
 
 parser.add_argument('--ensemble',
                     '--en',
@@ -36,13 +36,13 @@ parser.add_argument('--ensemble',
                     default=None,
                     help='Number of ensembled models.')
 
-parser.add_argument('--gate',
-                    '--g',
-                    metavar='gate',
-                    type=str,
+parser.add_argument('--freeze',
+                    '--f',
+                    metavar='freeze',
+                    type=bool,
                     action='store',
-                    default=None,
-                    help='(Optional) Attention gating.')
+                    default=False,
+                    help='Freeze CNN weights (pre-trained on ImageNet).')
 
 parser.add_argument('--odir',
                     '--o',
@@ -51,14 +51,6 @@ parser.add_argument('--odir',
                     action='store',
                     default='./',
                     help='Path to output folder.')
-
-parser.add_argument('--depth',
-                    '--d',
-                    metavar='depth',
-                    type=str,
-                    action='store',
-                    default='5',
-                    help='Depth of U-Net architecture used.')
 
 parser.add_argument('--epochs',
                     '--ep',
@@ -124,15 +116,18 @@ if args.test:
     f_test = h5py.File(args.test, 'r')
     test_data = rect.utils.io.H5DataLoader(f_test, label='vote')
 
-model = rect.model.networks.UNet(n_layers=int(args.depth), device=device,
-                                    gate=args.gate)
-
-trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir,
-                                    nb_epochs=int(args.epochs))
-
+class_train_data = rect.utils.io.ClassifyDataLoader(f_train)
 if args.val:
-    trainer.train(train_data, val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine(), rect.utils.transforms.SpeckleNoise()], 
-                    val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
+    class_val_data = rect.utils.io.ClassifyDataLoader(f_val)
 else:
-    trainer.train(train_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine(), rect.utils.transforms.SpeckleNoise()], 
-                    val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
+    class_val_data = None
+if args.test:
+    class_test_data = rect.utils.io.ClassifyDataLoader(f_test)
+else:
+    class_test_data = None
+
+class_model = rect.model.networks.MakeDenseNet(freeze_weights=args.freeze).to(device)
+class_trainer = rect.utils.train.ClassTrainer(class_model, outdir=os.path.join(args.odir),
+                                        ensemble=ensemble, nb_epochs=int(args.epochs))
+
+class_trainer.train(class_train_data, class_val_data, train_batch=int(args.batch))
