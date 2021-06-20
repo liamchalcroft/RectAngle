@@ -9,13 +9,15 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, random_split, ConcatDataset
 import numpy as np
 from scipy.ndimage import laplace
+from torch.utils.tensorboard import SummaryWriter
+from torchvision.utils import make_grid
 
 
 class Trainer(nn.Module):
     def __init__(self, model, nb_epochs=200, outdir='./logs',
      loss=DiceLoss(), metric=DiceLoss(), opt='adam',
      print_interval=1, val_interval=5, device='cuda',
-     early_stop=5, lr_schedule=None, ensemble=None):
+     early_stop=5, lr_schedule=None, ensemble=None): 
 
         super().__init__()
 
@@ -29,6 +31,7 @@ class Trainer(nn.Module):
         self.ensemble = ensemble
         self.outdir = outdir
         self.device = device
+        self.writer = SummaryWriter()
 
         if self.ensemble == 0:
             self.ensemble = None
@@ -136,6 +139,8 @@ class Trainer(nn.Module):
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
+                        self.writer.add_scalar('train/dice_loss_ensemble', loss_, epoch)
+                        self.writer.add_scalar('train/dice_coefficient_ensemble', 1-loss_, epoch)
                         print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log_ensemble[i,epoch]))
                     if epoch % self.val_interval == 0:
                         dice_epoch = []
@@ -155,6 +160,25 @@ class Trainer(nn.Module):
                                     lr_schedule_.step(dice_metric)
                                 dice_epoch.append(1 - dice_metric.item())
                             dice_log_ensemble[i,int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
+
+                            self.writer.add_scalar('val/dice_loss_ensemble', dice_metric, epoch)
+                            self.writer.add_scalar('val/dice_coefficient_ensemble', 1-dice_metric, epoch)
+
+                            ## show some (e.g.,10) example images in tensorboard
+                            ex_num = 10
+                            ex_label = label[:ex_num,0]
+                            ex_pred = pred[:ex_num,0]
+                            ex_image = torch.cat([ex_label,ex_pred], dim=2)
+
+                            ex_images = ex_image.reshape(-1,ex_image.shape[2])
+                            image_grid = (make_grid(ex_images, nrow=ex_num)[0]+0.5)/ex_num                     
+                            self.writer.add_images(
+                                "val/example_images_ensemble",
+                                image_grid,
+                                epoch,
+                                dataformats="HW",
+                            )
+
                         if epoch >= self.val_interval:
                             if dice_log_ensemble[i,int(epoch//self.val_interval)] > dice_max:
                                 early_ = 0
@@ -209,6 +233,8 @@ class Trainer(nn.Module):
                     loss_epoch.append(loss_.item())
                 loss_log[epoch] = np.nanmean(loss_epoch)
                 if epoch % self.print_interval == 0:
+                    self.writer.add_scalar('train/dice_loss', loss_, epoch)
+                    self.writer.add_scalar('train/dice_coefficient', 1-loss_, epoch)
                     print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log[epoch]))
                 if epoch % self.val_interval == 0:
                     dice_epoch = []
@@ -228,6 +254,25 @@ class Trainer(nn.Module):
                                 self.lr_schedule.step(dice_metric) # monitors validation loss 
                             dice_epoch.append(1 - dice_metric.item())
                         dice_log[int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
+
+                        self.writer.add_scalar('val/dice_loss', dice_metric, epoch)
+                        self.writer.add_scalar('val/dice_coefficient', 1-dice_metric, epoch)
+
+                        ## show some (e.g.,10) example images in tensorboard
+                        ex_num = 10
+                        ex_label = label[:ex_num,0]
+                        ex_pred = pred[:ex_num,0]
+                        ex_image = torch.cat([ex_label,ex_pred], dim=2)
+
+                        ex_images = ex_image.reshape(-1,ex_image.shape[2])
+                        image_grid = (make_grid(ex_images, nrow=ex_num)[0]+0.5)/ex_num                       
+                        self.writer.add_images(
+                            "val/example_images",
+                            image_grid,
+                            epoch,
+                            dataformats="HW",
+                        )
+
                     if epoch % self.print_interval == 0:
                         print('Mean Validation Dice: {}'.format(dice_log[int(epoch//self.val_interval)]))
                     if epoch >= self.val_interval:
@@ -517,6 +562,8 @@ class ClassTrainer(nn.Module):
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
+                        self.writer.add_scalar('class_train/dice_loss_ensemble', loss_, epoch) 
+                        self.writer.add_scalar('class_train/dice_coefficient_ensemble', 1-loss_, epoch)
                         print('Epoch #{}: Mean acc Loss: {}'.format(epoch, loss_log_ensemble[i,epoch]))
                     if epoch % self.val_interval == 0:
                         acc_epoch = []
@@ -534,6 +581,8 @@ class ClassTrainer(nn.Module):
                                 acc_metric = self.metric(pred, label)
                                 acc_epoch.append(acc_metric)
                             acc_log_ensemble[i,int(epoch//self.val_interval)] = np.nanmean(acc_epoch)
+                            self.writer.add_scalar('class_val/dice_loss_ensemble', acc_metric, epoch) 
+                            self.writer.add_scalar('class_val/dice_coefficient_ensemble', 1-acc_metric, epoch)
                         if epoch >= self.val_interval:
                             if acc_log_ensemble[i,int(epoch//self.val_interval)] > acc_max:
                                 early_ = 0
@@ -578,6 +627,8 @@ class ClassTrainer(nn.Module):
                     loss_epoch.append(loss_.item())
                 loss_log[epoch] = np.nanmean(loss_epoch)
                 if epoch % self.print_interval == 0:
+                    self.writer.add_scalar('class_train/dice_loss', loss_, epoch) 
+                    self.writer.add_scalar('class_train/dice_coefficient', 1-loss_, epoch)
                     print('Epoch #{}: Mean acc Loss: {}'.format(epoch, loss_log[epoch]))
                 if epoch % self.val_interval == 0:
                     acc_epoch = []
@@ -595,6 +646,8 @@ class ClassTrainer(nn.Module):
                             acc_metric = self.metric(pred, label)
                             acc_epoch.append(acc_metric)
                         acc_log[int(epoch//self.val_interval)] = np.nanmean(acc_epoch)
+                        self.writer.add_scalar('class_val/dice_loss', acc_metric, epoch) 
+                        self.writer.add_scalar('class_val/dice_coefficient', 1-acc_metric, epoch)
                     if epoch % self.print_interval == 0:
                         print('Mean Validation acc: {}'.format(acc_log[int(epoch//self.val_interval)]))
                     if epoch >= self.val_interval:
