@@ -323,9 +323,9 @@ class Trainer(nn.Module):
                     for aug in test_post:
                         pred = aug(pred)
                 dice_metric = self.metric(pred, label)
-                dice_log.append(1-dice_metric.item())
-                prec_log.append(precision(pred, label))
-                rec_log.append(recall(pred, label))
+                dice_log.append(1-dice_metric.item().detach().cpu().numpy())
+                prec_log.append(precision(pred, label).detach().cpu().numpy())
+                rec_log.append(recall(pred, label).detach().cpu().numpy())
 
                 input_img = input.detach().cpu().numpy()
                 pred_img = pred.detach().cpu().numpy()
