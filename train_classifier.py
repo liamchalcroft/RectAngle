@@ -99,22 +99,19 @@ if args.seed:
     random.seed(seed)
     np.random.seed(seed)
 
-f_train = h5py.File(args.train, 'r')
-train_data = rect.utils.io.H5DataLoader(f_train, label=args.label)
-
 if torch.cuda.is_available():
     device = torch.device('cuda')
     torch.backends.cudnn.benchmark = True
 else:
     device = torch.device('cpu')
 
+f_train = h5py.File(args.train, 'r')
+
 if args.val:
     f_val = h5py.File(args.val, 'r')
-    val_data = rect.utils.io.H5DataLoader(f_val, label='vote')
 
 if args.test:
     f_test = h5py.File(args.test, 'r')
-    test_data = rect.utils.io.H5DataLoader(f_test, label='vote')
 
 class_train_data = rect.utils.io.ClassifyDataLoader(f_train)
 if args.val:

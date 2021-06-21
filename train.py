@@ -120,10 +120,6 @@ if args.val:
     f_val = h5py.File(args.val, 'r')
     val_data = rect.utils.io.H5DataLoader(f_val, label='vote')
 
-if args.test:
-    f_test = h5py.File(args.test, 'r')
-    test_data = rect.utils.io.H5DataLoader(f_test, label='vote')
-
 model = rect.model.networks.UNet(n_layers=int(args.depth), device=device,
                                     gate=args.gate)
 
