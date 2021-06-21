@@ -31,7 +31,7 @@ class Trainer(nn.Module):
         self.ensemble = ensemble
         self.outdir = outdir
         self.device = device
-        self.writer = SummaryWriter(path.join(outdir,'runs'))
+        self.writer = SummaryWriter(log_dir=path.join(outdir,'runs'))
 
         if self.ensemble == 0:
             self.ensemble = None
