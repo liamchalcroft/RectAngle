@@ -125,6 +125,6 @@ else:
 
 class_model = rect.model.networks.MakeDenseNet(freeze_weights=args.freeze).to(device)
 class_trainer = rect.utils.train.ClassTrainer(class_model, outdir=os.path.join(args.odir),
-                                        ensemble=ensemble, nb_epochs=int(args.epochs))
+                                        ensemble=ensemble, nb_epochs=int(args.epochs), device=device)
 
 class_trainer.train(class_train_data, class_val_data, train_batch=int(args.batch))

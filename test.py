@@ -129,7 +129,7 @@ if args.classifier:
 else:
     test_data = rect.utils.io.H5DataLoader(f_test, label='vote')
 
-trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir)
+trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir, device=device)
 
 trainer.test(test_data, test_pre=[rect.utils.transforms.z_score()], 
             test_post=[rect.utils.transforms.Binary(), rect.utils.transforms.KeepLargestComponent()])
