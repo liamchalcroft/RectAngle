@@ -44,6 +44,14 @@ parser.add_argument('--gate',
                     default=None,
                     help='(Optional) Attention gating.')
 
+parser.add_argument('--lr_schedule',
+                    '--lrs',
+                    metavar='lr_schedule',
+                    type=str,
+                    action='store',
+                    default=None,
+                    help="Method for scheduling of learning rate. {None, 'lambda', 'exponential', 'reduce_on_plateau'}")
+
 parser.add_argument('--odir',
                     '--o',
                     metavar='odir',
@@ -124,7 +132,7 @@ model = rect.model.networks.UNet(n_layers=int(args.depth), device=device,
                                     gate=args.gate)
 
 trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir,
-                                    nb_epochs=int(args.epochs))
+                                    nb_epochs=int(args.epochs), lr_schedule=args.lr_schedule)
 
 if args.val:
     trainer.train(train_data, val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine(), rect.utils.transforms.SpeckleNoise()], 
