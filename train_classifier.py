@@ -113,13 +113,13 @@ if args.val:
 if args.test:
     f_test = h5py.File(args.test, 'r')
 
-class_train_data = rect.utils.io.ClassifyDataLoader(f_train)
+class_train_data = rect.utils.io.ClassifyDataLoader_v2(f_train)
 if args.val:
-    class_val_data = rect.utils.io.ClassifyDataLoader(f_val)
+    class_val_data = rect.utils.io.ClassifyDataLoader_v2(f_val)
 else:
     class_val_data = None
 if args.test:
-    class_test_data = rect.utils.io.ClassifyDataLoader(f_test)
+    class_test_data = rect.utils.io.ClassifyDataLoader_v2(f_test)
 else:
     class_test_data = None
 
