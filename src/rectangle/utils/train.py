@@ -499,6 +499,8 @@ class ClassTrainer(nn.Module):
 
         self.opt = opt
 
+        self.writer = SummaryWriter(log_dir=path.join(outdir,'runs'))
+
 
     def train(self, train_data, val_data=None, oname=None, 
         train_pre=None, train_post=None, train_batch=128, train_shuffle=True,
