@@ -16,8 +16,8 @@ from torchvision.utils import make_grid
 class Trainer(nn.Module):
     def __init__(self, model, nb_epochs=200, outdir='./logs',
      loss=DiceLoss(), metric=DiceLoss(), opt='adam',
-     print_interval=1, val_interval=5, device='cuda',
-     early_stop=5, lr_schedule=None, ensemble=None): 
+     print_interval=1, val_interval=1, device='cuda',
+     early_stop=10, lr_schedule=None, ensemble=None): 
 
         super().__init__()
 
@@ -138,9 +138,9 @@ class Trainer(nn.Module):
                         loss_ = self.loss(pred, label)
                         loss_.backward()
                         opt_.step()
-                        if lr_schedule_ and lr_schedule_ != 'reduce_on_plateau':
-                            lr_schedule_.step()
                         loss_epoch.append(loss_.item())
+                    if lr_schedule_ and lr_schedule_ != 'reduce_on_plateau':
+                        lr_schedule_.step()
                     loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
                         writer_.add_scalar('train/dice_loss_ensemble', loss_, epoch)
@@ -160,10 +160,10 @@ class Trainer(nn.Module):
                                     for aug in val_post:
                                         pred = aug(pred)
                                 dice_metric = self.metric(pred, label)
-                                if lr_schedule_ == 'reduce_on_plateau':
-                                    lr_schedule_.step(dice_metric)
                                 dice_epoch.append(1 - dice_metric.item())
                             dice_log_ensemble[i,int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
+                            if lr_schedule_ == 'reduce_on_plateau':
+                                lr_schedule_.step(1-np.nanmean(dice_epoch))
 
                             writer_.add_scalar('val/dice_loss_ensemble', dice_metric, epoch)
                             writer_.add_scalar('val/dice_coefficient_ensemble', 1-dice_metric, epoch)
