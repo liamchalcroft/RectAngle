@@ -31,7 +31,6 @@ class Trainer(nn.Module):
         self.ensemble = ensemble
         self.outdir = outdir
         self.device = device
-        self.writer = SummaryWriter(log_dir=path.join(outdir,'runs'))
 
         if self.ensemble == 0:
             self.ensemble = None
@@ -46,6 +45,10 @@ class Trainer(nn.Module):
                 self.model_ensemble = []
                 for i in range(self.ensemble):
                     self.model_ensemble.append(deepcopy(model))
+
+            self.writer = [SummaryWriter(log_dir=path.join(outdir,'runs/model_{}'.format(i))) for i in range(self.ensemble)]
+        else:
+            self.writer = SummaryWriter(log_dir=path.join(outdir,'runs'))
 
         if opt == 'adam':
             if self.ensemble: 
@@ -103,6 +106,7 @@ class Trainer(nn.Module):
                 train = train_list[i]
                 val = val_list[i]
                 opt_ = self.opt[i]
+                writer_ = self.writer[i]
                 if self.lr_schedule:
                     lr_schedule_ = self.lr_schedule[i]
                     if lr_schedule_ == 'lambda':
@@ -139,8 +143,8 @@ class Trainer(nn.Module):
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
-                        self.writer.add_scalar('train/dice_loss_ensemble', loss_, epoch)
-                        self.writer.add_scalar('train/dice_coefficient_ensemble', 1-loss_, epoch)
+                        writer_.add_scalar('train/dice_loss_ensemble', loss_, epoch)
+                        writer_.add_scalar('train/dice_coefficient_ensemble', 1-loss_, epoch)
                         print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log_ensemble[i,epoch]))
                     if epoch % self.val_interval == 0:
                         dice_epoch = []
@@ -161,8 +165,8 @@ class Trainer(nn.Module):
                                 dice_epoch.append(1 - dice_metric.item())
                             dice_log_ensemble[i,int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
 
-                            self.writer.add_scalar('val/dice_loss_ensemble', dice_metric, epoch)
-                            self.writer.add_scalar('val/dice_coefficient_ensemble', 1-dice_metric, epoch)
+                            writer_.add_scalar('val/dice_loss_ensemble', dice_metric, epoch)
+                            writer_.add_scalar('val/dice_coefficient_ensemble', 1-dice_metric, epoch)
 
                             ## show some (e.g.,10) example images in tensorboard
                             ex_num = 10
@@ -172,7 +176,7 @@ class Trainer(nn.Module):
 
                             ex_images = ex_image.reshape(-1,ex_image.shape[2])
                             image_grid = (make_grid(ex_images, nrow=ex_num)[0]+0.5)/ex_num                     
-                            self.writer.add_images(
+                            writer_.add_images(
                                 "val/example_images_ensemble",
                                 image_grid,
                                 epoch,
