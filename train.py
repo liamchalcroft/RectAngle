@@ -143,6 +143,6 @@ if args.val:
     trainer.train(train_data, val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine()],
                     val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
 else:
-    trainer.train(train_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine()], 
+    trainer.train(train_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine(prob = 0.3, scale = (0.9,1.1), degrees = 5, shear = 0, translate = 0)], 
                     val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
 
