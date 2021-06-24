@@ -131,10 +131,9 @@ class Trainer(nn.Module):
                         if train_pre:
                             for aug in train_pre:
                                 if aug.__class__.__name__ == 'Flip' or 'Affine':
-                                    input = torch.stack([input, label])
+                                    input = torch.cat([input, label])
                                     input = aug(input)
                                     input, label = torch.chunk(input, 2)
-                                    input, label = input[0], label[0]
                                 else:
                                     input = aug(input)
                         pred = model(input)
@@ -161,10 +160,9 @@ class Trainer(nn.Module):
                                 if val_pre:
                                     for aug in val_pre:
                                         if aug.__class__.__name__ == 'Flip' or 'Affine':
-                                            input = torch.stack([input, label])
+                                            input = torch.cat([input, label])
                                             input = aug(input)
                                             input, label = torch.chunk(input, 2)
-                                            input, label = input[0], label[0]
                                         else:
                                             input = aug(input)
                                 pred = model(input)
@@ -237,10 +235,9 @@ class Trainer(nn.Module):
                     if train_pre:
                         for aug in train_pre:
                             if aug.__class__.__name__ == 'Flip' or 'Affine':
-                                input = torch.stack([input, label])
+                                input = torch.cat([input, label])
                                 input = aug(input)
                                 input, label = torch.chunk(input, 2)
-                                input, label = input[0], label[0]
                             else:
                                 input = aug(input)
                     pred = model(input)
@@ -267,7 +264,7 @@ class Trainer(nn.Module):
                             if val_pre:
                                 for aug in val_pre:
                                     if aug.__class__.__name__ == 'Flip' or 'Affine':
-                                        input = torch.stack([input, label])
+                                        input = torch.cat([input, label])
                                         input = aug(input)
                                         input, label = torch.chunk(input, 2)
                                         input, label = input[0], label[0]
@@ -386,10 +383,9 @@ class Trainer(nn.Module):
                 if test_pre:
                     for aug in test_pre:
                         if aug.__class__.__name__ == 'Flip' or 'Affine':
-                            input = torch.stack([input, label])
+                            input = torch.cat([input, label])
                             input = aug(input)
                             input, label = torch.chunk(input, 2)
-                            input, label = input[0], label[0]
                         else:
                             input = aug(input)
                 if self.ensemble:
@@ -588,10 +584,9 @@ class ClassTrainer(nn.Module):
                         if train_pre:
                             for aug in train_pre:
                                 if aug.__class__.__name__ == 'Flip' or 'Affine':
-                                    input = torch.stack([input, label])
+                                    input = torch.cat([input, label])
                                     input = aug(input)
                                     input, label = torch.chunk(input, 2)
-                                    input, label = input[0], label[0]
                                 else:
                                     input = aug(input)
                         pred = model(input)
@@ -616,10 +611,9 @@ class ClassTrainer(nn.Module):
                                 if val_pre:
                                     for aug in val_pre:
                                         if aug.__class__.__name__ == 'Flip' or 'Affine':
-                                            input = torch.stack([input, label])
+                                            input = torch.cat([input, label])
                                             input = aug(input)
                                             input, label = torch.chunk(input, 2)
-                                            input, label = input[0], label[0]
                                         else:
                                             input = aug(input)
                                 pred = model(input)
@@ -665,10 +659,9 @@ class ClassTrainer(nn.Module):
                     if train_pre:
                         for aug in train_pre:
                             if aug.__class__.__name__ == 'Flip' or 'Affine':
-                                input = torch.stack([input, label])
+                                input = torch.cat([input, label])
                                 input = aug(input)
                                 input, label = torch.chunk(input, 2)
-                                input, label = input[0], label[0]
                             else:
                                 input = aug(input)
                     pred = model(input)
@@ -693,10 +686,9 @@ class ClassTrainer(nn.Module):
                             if val_pre:
                                 for aug in val_pre:
                                     if aug.__class__.__name__ == 'Flip' or 'Affine':
-                                        input = torch.stack([input, label])
+                                        input = torch.cat([input, label])
                                         input = aug(input)
                                         input, label = torch.chunk(input, 2)
-                                        input, label = input[0], label[0]
                                     else:
                                         input = aug(input)
                             pred = model(input)
