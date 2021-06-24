@@ -109,6 +109,8 @@ import random
 import numpy as np
 
 print("Code running")
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
 # set seeds for repeatable results
 if args.seed:
     seed = int(args.seed)
