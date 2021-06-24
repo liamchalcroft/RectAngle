@@ -130,7 +130,12 @@ class Trainer(nn.Module):
                         opt_.zero_grad()
                         if train_pre:
                             for aug in train_pre:
-                                input = aug(input)
+                                if aug.__class__.__name__ == 'Flip' or 'Affine':
+                                    input = torch.stack([input, label])
+                                    input = aug(input)
+                                    input, label = torch.chunk(input, 2)
+                                else:
+                                    input = aug(input)
                         pred = model(input)
                         if train_post:
                             for aug in train_post:
@@ -154,7 +159,12 @@ class Trainer(nn.Module):
                                 input, label = input.to(self.device), label.to(self.device)
                                 if val_pre:
                                     for aug in val_pre:
-                                        input = aug(input)
+                                        if aug.__class__.__name__ == 'Flip' or 'Affine':
+                                            input = torch.stack([input, label])
+                                            input = aug(input)
+                                            input, label = torch.chunk(input, 2)
+                                        else:
+                                            input = aug(input)
                                 pred = model(input)
                                 if val_post:
                                     for aug in val_post:
@@ -224,7 +234,12 @@ class Trainer(nn.Module):
                     self.opt.zero_grad()
                     if train_pre:
                         for aug in train_pre:
-                            input = aug(input)
+                            if aug.__class__.__name__ == 'Flip' or 'Affine':
+                                input = torch.stack([input, label])
+                                input = aug(input)
+                                input, label = torch.chunk(input, 2)
+                            else:
+                                input = aug(input)
                     pred = model(input)
                     if train_post:
                         for aug in train_post:
@@ -248,7 +263,12 @@ class Trainer(nn.Module):
                             input, label = input.to(self.device), label.to(self.device)
                             if val_pre:
                                 for aug in val_pre:
-                                    input = aug(input)
+                                    if aug.__class__.__name__ == 'Flip' or 'Affine':
+                                        input = torch.stack([input, label])
+                                        input = aug(input)
+                                        input, label = torch.chunk(input, 2)
+                                    else:
+                                        input = aug(input)
                             pred = model(input)
                             if val_post:
                                 for aug in val_post:
@@ -361,7 +381,12 @@ class Trainer(nn.Module):
                 input, label = input.to(self.device), label.to(self.device)
                 if test_pre:
                     for aug in test_pre:
-                        input = aug(input)
+                        if aug.__class__.__name__ == 'Flip' or 'Affine':
+                            input = torch.stack([input, label])
+                            input = aug(input)
+                            input, label = torch.chunk(input, 2)
+                        else:
+                            input = aug(input)
                 if self.ensemble:
                     pred = [model(input) for model in self.model_ensemble]
                     pred = torch.cat(pred, dim=0)
@@ -557,7 +582,12 @@ class ClassTrainer(nn.Module):
                         opt_.zero_grad()
                         if train_pre:
                             for aug in train_pre:
-                                input = aug(input)
+                                if aug.__class__.__name__ == 'Flip' or 'Affine':
+                                    input = torch.stack([input, label])
+                                    input = aug(input)
+                                    input, label = torch.chunk(input, 2)
+                                else:
+                                    input = aug(input)
                         pred = model(input)
                         if train_post:
                             for aug in train_post:
@@ -579,7 +609,12 @@ class ClassTrainer(nn.Module):
                                 input, label = input.to(self.device), label.to(self.device)
                                 if val_pre:
                                     for aug in val_pre:
-                                        input = aug(input)
+                                        if aug.__class__.__name__ == 'Flip' or 'Affine':
+                                            input = torch.stack([input, label])
+                                            input = aug(input)
+                                            input, label = torch.chunk(input, 2)
+                                        else:
+                                            input = aug(input)
                                 pred = model(input)
                                 if val_post:
                                     for aug in val_post:
@@ -622,7 +657,12 @@ class ClassTrainer(nn.Module):
                     self.opt.zero_grad()
                     if train_pre:
                         for aug in train_pre:
-                            input = aug(input)
+                            if aug.__class__.__name__ == 'Flip' or 'Affine':
+                                input = torch.stack([input, label])
+                                input = aug(input)
+                                input, label = torch.chunk(input, 2)
+                            else:
+                                input = aug(input)
                     pred = model(input)
                     if train_post:
                         for aug in train_post:
@@ -644,7 +684,12 @@ class ClassTrainer(nn.Module):
                             input, label = input.to(self.device), label.to(self.device)
                             if val_pre:
                                 for aug in val_pre:
-                                    input = aug(input)
+                                    if aug.__class__.__name__ == 'Flip' or 'Affine':
+                                        input = torch.stack([input, label])
+                                        input = aug(input)
+                                        input, label = torch.chunk(input, 2)
+                                    else:
+                                        input = aug(input)
                             pred = model(input)
                             if val_post:
                                 for aug in val_post:
