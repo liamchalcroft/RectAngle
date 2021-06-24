@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from rectangle.utils.metrics import DiceLoss, Precision, Recall, Accuracy
+from rectangle.utils.transforms import Binary
 from torch.optim import Adam
 from copy import deepcopy
 from os import path, makedirs
@@ -31,6 +32,7 @@ class Trainer(nn.Module):
         self.ensemble = ensemble
         self.outdir = outdir
         self.device = device
+        self.bin = Binary()
 
         if self.ensemble == 0:
             self.ensemble = None
@@ -134,6 +136,7 @@ class Trainer(nn.Module):
                                     input = torch.cat([input, label])
                                     input = aug(input)
                                     input, label = torch.chunk(input, 2)
+                                    label = self.bin(label)
                                 else:
                                     input = aug(input)
                         pred = model(input)
@@ -163,6 +166,7 @@ class Trainer(nn.Module):
                                             input = torch.cat([input, label])
                                             input = aug(input)
                                             input, label = torch.chunk(input, 2)
+                                            label = self.bin(label)
                                         else:
                                             input = aug(input)
                                 pred = model(input)
@@ -238,6 +242,7 @@ class Trainer(nn.Module):
                                 input = torch.cat([input, label])
                                 input = aug(input)
                                 input, label = torch.chunk(input, 2)
+                                label = self.bin(label)
                             else:
                                 input = aug(input)
                     pred = model(input)
@@ -267,6 +272,7 @@ class Trainer(nn.Module):
                                         input = torch.cat([input, label])
                                         input = aug(input)
                                         input, label = torch.chunk(input, 2)
+                                        label = self.bin(label)
                                     else:
                                         input = aug(input)
                             pred = model(input)
@@ -385,6 +391,7 @@ class Trainer(nn.Module):
                             input = torch.cat([input, label])
                             input = aug(input)
                             input, label = torch.chunk(input, 2)
+                            label = self.bin(label)
                         else:
                             input = aug(input)
                 if self.ensemble:
@@ -586,6 +593,7 @@ class ClassTrainer(nn.Module):
                                     input = torch.cat([input, label])
                                     input = aug(input)
                                     input, label = torch.chunk(input, 2)
+                                    label = self.bin(label)
                                 else:
                                     input = aug(input)
                         pred = model(input)
@@ -613,6 +621,7 @@ class ClassTrainer(nn.Module):
                                             input = torch.cat([input, label])
                                             input = aug(input)
                                             input, label = torch.chunk(input, 2)
+                                            label = self.bin(label)
                                         else:
                                             input = aug(input)
                                 pred = model(input)
@@ -661,6 +670,7 @@ class ClassTrainer(nn.Module):
                                 input = torch.cat([input, label])
                                 input = aug(input)
                                 input, label = torch.chunk(input, 2)
+                                label = self.bin(label)
                             else:
                                 input = aug(input)
                     pred = model(input)
@@ -688,6 +698,7 @@ class ClassTrainer(nn.Module):
                                         input = torch.cat([input, label])
                                         input = aug(input)
                                         input, label = torch.chunk(input, 2)
+                                        label = self.bin(label)
                                     else:
                                         input = aug(input)
                             pred = model(input)
