@@ -108,6 +108,7 @@ import torch
 import random
 import numpy as np
 
+print("Code running")
 # set seeds for repeatable results
 if args.seed:
     seed = int(args.seed)
@@ -124,6 +125,7 @@ if torch.cuda.is_available():
     print("Cuda available!")
 else:
     device = torch.device('cpu')
+    print("Using CPU!")
 
 if args.val:
     f_val = h5py.File(args.val, 'r')
