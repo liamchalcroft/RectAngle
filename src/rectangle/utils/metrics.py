@@ -29,7 +29,7 @@ class DiceLoss(nn.Module):
     # Seems to perform very well without binary - soft dice?
 
     if not self.soft:
-      inputs = BinaryDice(inputs, self.threshold)
+      inputs = self.BinaryDice(inputs, self.threshold)
 
     inputs = inputs.view(-1).float()
     targets = targets.view(-1).float()
