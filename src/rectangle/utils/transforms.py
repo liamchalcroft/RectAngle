@@ -81,8 +81,10 @@ class Affine(object):
   def __call__(self, image):
     rand_ = random.uniform(0,1)
     if rand_ < self.prob:
-      RandAffine_ = RandomAffine(degrees=self.degrees, translate=(self.translate,self.translate),
-                                scale=self.scale, shear=self.shear)
+      #RandAffine_ = RandomAffine(degrees=self.degrees, translate=(self.translate,self.translate),
+      #                          scale=self.scale, shear=self.shear)
+      RandAffine_ = RandomAffine(scale=self.scale)
+
       image = RandAffine_(image)
     return image
            
