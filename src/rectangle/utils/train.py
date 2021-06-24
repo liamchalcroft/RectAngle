@@ -134,6 +134,7 @@ class Trainer(nn.Module):
                                     input = torch.stack([input, label])
                                     input = aug(input)
                                     input, label = torch.chunk(input, 2)
+                                    input, label = input[0], label[0]
                                 else:
                                     input = aug(input)
                         pred = model(input)
@@ -163,6 +164,7 @@ class Trainer(nn.Module):
                                             input = torch.stack([input, label])
                                             input = aug(input)
                                             input, label = torch.chunk(input, 2)
+                                            input, label = input[0], label[0]
                                         else:
                                             input = aug(input)
                                 pred = model(input)
@@ -238,6 +240,7 @@ class Trainer(nn.Module):
                                 input = torch.stack([input, label])
                                 input = aug(input)
                                 input, label = torch.chunk(input, 2)
+                                input, label = input[0], label[0]
                             else:
                                 input = aug(input)
                     pred = model(input)
@@ -267,6 +270,7 @@ class Trainer(nn.Module):
                                         input = torch.stack([input, label])
                                         input = aug(input)
                                         input, label = torch.chunk(input, 2)
+                                        input, label = input[0], label[0]
                                     else:
                                         input = aug(input)
                             pred = model(input)
@@ -385,6 +389,7 @@ class Trainer(nn.Module):
                             input = torch.stack([input, label])
                             input = aug(input)
                             input, label = torch.chunk(input, 2)
+                            input, label = input[0], label[0]
                         else:
                             input = aug(input)
                 if self.ensemble:
@@ -586,6 +591,7 @@ class ClassTrainer(nn.Module):
                                     input = torch.stack([input, label])
                                     input = aug(input)
                                     input, label = torch.chunk(input, 2)
+                                    input, label = input[0], label[0]
                                 else:
                                     input = aug(input)
                         pred = model(input)
@@ -613,6 +619,7 @@ class ClassTrainer(nn.Module):
                                             input = torch.stack([input, label])
                                             input = aug(input)
                                             input, label = torch.chunk(input, 2)
+                                            input, label = input[0], label[0]
                                         else:
                                             input = aug(input)
                                 pred = model(input)
@@ -661,6 +668,7 @@ class ClassTrainer(nn.Module):
                                 input = torch.stack([input, label])
                                 input = aug(input)
                                 input, label = torch.chunk(input, 2)
+                                input, label = input[0], label[0]
                             else:
                                 input = aug(input)
                     pred = model(input)
@@ -688,6 +696,7 @@ class ClassTrainer(nn.Module):
                                         input = torch.stack([input, label])
                                         input = aug(input)
                                         input, label = torch.chunk(input, 2)
+                                        input, label = input[0], label[0]
                                     else:
                                         input = aug(input)
                             pred = model(input)
