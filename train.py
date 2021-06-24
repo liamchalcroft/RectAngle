@@ -121,6 +121,7 @@ train_data = rect.utils.io.H5DataLoader(f_train, label=args.label)
 if torch.cuda.is_available():
     device = torch.device('cuda')
     torch.backends.cudnn.benchmark = True
+    print("Cuda available!")
 else:
     device = torch.device('cpu')
 
