@@ -336,6 +336,7 @@ class Binary(object):
     super().__init__()
     self.threshold = threshold
 
+  # TODO: check for torch auto binarising
   def __call__(self, image):
     return (image > self.threshold).int()
 
