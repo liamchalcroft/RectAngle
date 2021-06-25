@@ -142,7 +142,7 @@ trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir, d
                                     nb_epochs=int(args.epochs), lr_schedule=args.lr_schedule)
 
 #Manually setting Affine Transforms
-AffineTransform = rect.utils.transforms.Affine(prob = 0.3, scale = None, degrees = 5, shear = None, translate = None)
+AffineTransform = rect.utils.transforms.Affine(prob = 0.3, scale = (1,1), degrees = 5, shear = 0, translate = 0)
 
 if args.val:
     trainer.train(train_data, val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), AffineTransform],
