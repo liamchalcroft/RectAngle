@@ -1,6 +1,8 @@
 import os
 import argparse
 
+from rectangle.utils.transforms import Affine
+
 parser = argparse.ArgumentParser(prog='train',
                                 description="Train RectAngle model. See list of available arguments for more info.")
 
@@ -139,10 +141,13 @@ model = rect.model.networks.UNet(n_layers=int(args.depth), device=device,
 trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir, device=device,
                                     nb_epochs=int(args.epochs), lr_schedule=args.lr_schedule)
 
+#Manually setting Affine Transforms
+AffineTransform = rect.utils.transforms.Affine(prob = 0.3, scale = None, degrees = 5, shear = None, translate = None)
+
 if args.val:
-    trainer.train(train_data, val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine()],
+    trainer.train(train_data, val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), AffineTransform],
                     val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
 else:
-    trainer.train(train_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine(prob = 0.3, scale = (0.9,1.1), degrees = 5, shear = 0, translate = 0)], 
+    trainer.train(train_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), AffineTransform], 
                     val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
 
