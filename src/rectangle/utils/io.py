@@ -84,8 +84,6 @@ class H5DataLoader(torch.utils.data.Dataset):
     self.subjects = np.linspace(start_subj, last_subj, 
                                 self.num_subjects+1, dtype=int)
     self.label = label
-    if label.split('_')[0] == 'combine':
-      self.label_loop = label
 
   def __len__(self):
     return self.num_subjects
@@ -96,14 +94,7 @@ class H5DataLoader(torch.utils.data.Dataset):
     image = torch.unsqueeze(torch.tensor(
         self.file['frame_%05d' % (subj_ix, 
                                        )][()].astype('float32')), dim=0)
-    
-    if self.label_loop.split('_')[0] == 'combine':
-      label_percent = int(self.label_loop.split('_')[1])
-      if index < int(self.num_subjects*label_percent/100):
-        self.label = 'vote'
-      else:
-        self.label = 'random'
-        
+
     if self.label == 'random':                                
       label = torch.unsqueeze(torch.tensor(
           self.file['label_%05d_%02d' % (subj_ix, 
