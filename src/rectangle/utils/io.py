@@ -94,6 +94,7 @@ class H5DataLoader(torch.utils.data.Dataset):
     image = torch.unsqueeze(torch.tensor(
         self.file['frame_%05d' % (subj_ix, 
                                        )][()].astype('float32')), dim=0)
+
     if self.label == 'random':                                
       label = torch.unsqueeze(torch.tensor(
           self.file['label_%05d_%02d' % (subj_ix, 

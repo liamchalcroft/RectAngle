@@ -1,6 +1,8 @@
 import os
 import argparse
 
+from rectangle.utils.transforms import Affine
+
 parser = argparse.ArgumentParser(prog='train',
                                 description="Train RectAngle model. See list of available arguments for more info.")
 
@@ -92,6 +94,14 @@ parser.add_argument('--seed',
                     default=None,
                     help='Random seed for training.')
 
+parser.add_argument('--earlystop',
+                    '--e',
+                    metavar='earlystop',
+                    type=str,
+                    action='store',
+                    default='10',
+                    help='Number of val steps with no improvement before stopping training early.')
+
 
 args = parser.parse_args()
 
@@ -108,6 +118,9 @@ import torch
 import random
 import numpy as np
 
+print("Code running")
+#os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
 # set seeds for repeatable results
 if args.seed:
     seed = int(args.seed)
@@ -121,8 +134,10 @@ train_data = rect.utils.io.H5DataLoader(f_train, label=args.label)
 if torch.cuda.is_available():
     device = torch.device('cuda')
     torch.backends.cudnn.benchmark = True
+    print("Cuda available!")
 else:
     device = torch.device('cpu')
+    print("Using CPU!")
 
 if args.val:
     f_val = h5py.File(args.val, 'r')
@@ -132,11 +147,16 @@ model = rect.model.networks.UNet(n_layers=int(args.depth), device=device,
                                     gate=args.gate)
 
 trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir, device=device,
-                                    nb_epochs=int(args.epochs), lr_schedule=args.lr_schedule)
+                                    nb_epochs=int(args.epochs), lr_schedule=args.lr_schedule,
+                                    early_stop=int(args.earlystop))
+
+#Manually setting Affine Transforms
+AffineTransform = rect.utils.transforms.Affine(prob = 0.3, scale = (1,1), degrees = 5, shear = 0, translate = 0)
 
 if args.val:
-    trainer.train(train_data, val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine(), rect.utils.transforms.SpeckleNoise()], 
+    trainer.train(train_data, val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), AffineTransform],
                     val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
 else:
-    trainer.train(train_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine(), rect.utils.transforms.SpeckleNoise()], 
+    trainer.train(train_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), AffineTransform], 
                     val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
+

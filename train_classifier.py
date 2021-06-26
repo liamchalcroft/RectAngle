@@ -127,4 +127,5 @@ class_model = rect.model.networks.MakeDenseNet(freeze_weights=args.freeze).to(de
 class_trainer = rect.utils.train.ClassTrainer(class_model, outdir=os.path.join(args.odir),
                                         ensemble=ensemble, nb_epochs=int(args.epochs), device=device)
 
-class_trainer.train(class_train_data, class_val_data, train_batch=int(args.batch))
+class_trainer.train(class_train_data, class_val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine()],
+                    val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
