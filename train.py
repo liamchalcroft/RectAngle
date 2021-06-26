@@ -94,6 +94,14 @@ parser.add_argument('--seed',
                     default=None,
                     help='Random seed for training.')
 
+parser.add_argument('--earlystop',
+                    '--e',
+                    metavar='earlystop',
+                    type=str,
+                    action='store',
+                    default='10',
+                    help='Number of val steps with no improvement before stopping training early.')
+
 
 args = parser.parse_args()
 
@@ -139,7 +147,8 @@ model = rect.model.networks.UNet(n_layers=int(args.depth), device=device,
                                     gate=args.gate)
 
 trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir, device=device,
-                                    nb_epochs=int(args.epochs), lr_schedule=args.lr_schedule)
+                                    nb_epochs=int(args.epochs), lr_schedule=args.lr_schedule,
+                                    early_stop=int(args.earlystop))
 
 #Manually setting Affine Transforms
 AffineTransform = rect.utils.transforms.Affine(prob = 0.3, scale = (1,1), degrees = 5, shear = 0, translate = 0)
