@@ -54,9 +54,9 @@ class Trainer(nn.Module):
 
         if opt == 'adam':
             if self.ensemble: 
-                opt = [Adam(model.parameters()) for model in self.model_ensemble]
+                opt = [Adam(model.parameters(), lr=0.0001) for model in self.model_ensemble]
             else:
-                opt = Adam(model.parameters())
+                opt = Adam(model.parameters(), lr=0.0001)
             # opt = Adam(model.parameters())
 
         self.opt = opt
@@ -252,9 +252,9 @@ class Trainer(nn.Module):
                     loss_ = self.loss(pred, label)
                     loss_.backward()
                     self.opt.step()
-                    if self.lr_schedule and self.lr_schedule != 'reduce_on_plateau':
-                        self.lr_schedule.step()
                     loss_epoch.append(loss_.item())
+                if self.lr_schedule and self.lr_schedule != 'reduce_on_plateau':
+                    self.lr_schedule.step()
                 loss_log[epoch] = np.nanmean(loss_epoch)
                 if epoch % self.print_interval == 0:
                     self.writer.add_scalar('train/dice_loss', loss_, epoch)
@@ -280,11 +280,11 @@ class Trainer(nn.Module):
                                 for aug in val_post:
                                     pred = aug(pred)
                             dice_metric = self.metric(pred, label)
-                            if self.lr_schedule == 'reduce_on_plateau':
-                                self.lr_schedule.step(dice_metric) # monitors validation loss 
+                            
                             dice_epoch.append(1 - dice_metric.item())
                         dice_log[int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
-
+                        if self.lr_schedule == 'reduce_on_plateau':
+                            self.lr_schedule.step(1-np.nanmean(dice_epoch)) # monitors validation loss 
                         self.writer.add_scalar('val/dice_loss', dice_metric, epoch)
                         self.writer.add_scalar('val/dice_coefficient', 1-dice_metric, epoch)
 
