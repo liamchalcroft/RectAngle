@@ -91,7 +91,10 @@ args = parser.parse_args()
 if args.ensemble:
     ensemble = int(args.ensemble)
 else:
-    ensemble = None
+    if args.weights:
+        ensemble=int(len(args.weights))
+    else:
+        ensemble = None
 
 ## run training
 import rectangle as rect
@@ -107,23 +110,26 @@ if args.seed:
     random.seed(seed)
     np.random.seed(seed)
 
-model = [rect.model.networks.UNet(n_layers=int(args.depth), device=device,
-                                    gate=args.gate) for e in int(args.ensemble)]
-
-for n, m in enumerate(model):
-    m.load_state_dict(torch.load(args.weights[n]))
-
-
-if args.classifier:
-    class_model = rect.model.networks.MakeDenseNet(freeze_weights=False).to(device)
-if args.classweights:
-    class_model.load_state_dict(torch.load(args.classweights))
-
 if torch.cuda.is_available():
     device = torch.device('cuda')
     torch.backends.cudnn.benchmark = True
 else:
     device = torch.device('cpu')
+
+if ensemble:
+    model = [rect.model.networks.UNet(n_layers=int(args.depth), device=device,
+                                        gate=args.gate) for e in range(ensemble)]
+else:
+    model = rect.model.networks.UNet(n_layers=int(args.depth), device=device,
+                                    gate=args.gate)
+
+for n, m in enumerate(model):
+    m.load_state_dict(torch.load(args.weights[n]))
+
+if args.classifier:
+    class_model = rect.model.networks.MakeDenseNet(freeze_weights=False).to(device)
+if args.classweights:
+    class_model.load_state_dict(torch.load(args.classweights))
 
 f_test = h5py.File(args.test, 'r')
 if args.classifier:
