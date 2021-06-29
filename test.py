@@ -94,7 +94,7 @@ else:
     if args.weights:
         ensemble=int(len(args.weights))
     else:
-        ensemble = None
+        ensemble = 1
 
 ## run training
 import rectangle as rect
@@ -116,15 +116,11 @@ if torch.cuda.is_available():
 else:
     device = torch.device('cpu')
 
-if ensemble:
-    model = [rect.model.networks.UNet(n_layers=int(args.depth), device=device,
-                                        gate=args.gate) for e in range(ensemble)]
-else:
-    model = rect.model.networks.UNet(n_layers=int(args.depth), device=device,
-                                    gate=args.gate)
+model = [rect.model.networks.UNet(n_layers=int(args.depth), device=device,
+                                    gate=args.gate) for e in range(ensemble)]
 
 for n, m in enumerate(model):
-    m.load_state_dict(torch.load(args.weights[n]))
+    m.load_state_dict(torch.load(args.weights[n], map_location=device))
 
 if args.classifier:
     class_model = rect.model.networks.MakeDenseNet(freeze_weights=False).to(device)
