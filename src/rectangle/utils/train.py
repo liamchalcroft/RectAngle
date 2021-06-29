@@ -424,6 +424,12 @@ class Trainer(nn.Module):
                 pred_img = np.squeeze(pred_img)
                 label_img = np.squeeze(label_img)
 
+                plt.figure()
+                plt.imshow(pred_img, cmap='gray', vmin=0, vmax=1)
+                plt.axis('off')
+                plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
+                plt.savefig(path.join(path_, 'pred_{}_{}.png'.format(i, oname)))
+
                 if overlap:
                     if overlap=='contour':
                         input_img -= input_img.min()
@@ -440,6 +446,7 @@ class Trainer(nn.Module):
                         plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1)
                         plt.axis('off')
                         plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1)
+                        plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
                         plt.axis('off')
                     elif overlap=='mask':
                         input_img -= input_img.min()
@@ -449,27 +456,13 @@ class Trainer(nn.Module):
                         plt.figure()
                         plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
                         plt.axis('off')
-                        plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.5)
+                        plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.3)
                         plt.axis('off')
-                        plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.5)
+                        plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.3)
+                        plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
                         plt.axis('off')
                         
                     plt.savefig(path.join(path_, 'pred_overlap_{}_{}.png'.format(i, oname)))
-
-                plt.figure()
-                plt.subplot(131)
-                plt.imshow(input_img, cmap='gray')
-                plt.axis('off')
-                plt.title('Image')
-                plt.subplot(132)
-                plt.imshow(pred_img, cmap='gray', vmin=0, vmax=1)
-                plt.axis('off')
-                plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
-                plt.subplot(133)
-                plt.imshow(label_img, cmap='gray', vmin=0, vmax=1)
-                plt.axis('off')
-                plt.title('Ground Truth')
-                plt.savefig(path.join(path_, 'pred_{}_{}.png'.format(i, oname)))
 
         dice_log = np.array(dice_log, dtype=float)
         prec_log = np.array(prec_log, dtype=float)
