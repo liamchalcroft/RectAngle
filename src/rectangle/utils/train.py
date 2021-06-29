@@ -151,8 +151,8 @@ class Trainer(nn.Module):
                         lr_schedule_.step()
                     loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
-                        writer_.add_scalar('train/dice_loss_ensemble', loss_, epoch)
-                        writer_.add_scalar('train/dice_coefficient_ensemble', 1-loss_, epoch)
+                        writer_.add_scalar('train/dice_loss_ensemble', np.nanmean(dice_epoch), epoch)
+                        writer_.add_scalar('train/dice_coefficient_ensemble', 1-np.nanmean(dice_epoch), epoch)
                         print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log_ensemble[i,epoch]))
                     if epoch % self.val_interval == 0:
                         dice_epoch = []
@@ -179,8 +179,8 @@ class Trainer(nn.Module):
                             if lr_schedule_ == 'reduce_on_plateau':
                                 lr_schedule_.step(1-np.nanmean(dice_epoch))
 
-                            writer_.add_scalar('val/dice_loss_ensemble', dice_metric, epoch)
-                            writer_.add_scalar('val/dice_coefficient_ensemble', 1-dice_metric, epoch)
+                            writer_.add_scalar('val/dice_loss_ensemble', np.nanmean(dice_epoch), epoch)
+                            writer_.add_scalar('val/dice_coefficient_ensemble', 1-np.nanmean(dice_epoch), epoch)
 
                             ## show some (e.g.,10) example images in tensorboard
                             ex_num = 10
@@ -257,8 +257,8 @@ class Trainer(nn.Module):
                     self.lr_schedule.step()
                 loss_log[epoch] = np.nanmean(loss_epoch)
                 if epoch % self.print_interval == 0:
-                    self.writer.add_scalar('train/dice_loss', loss_, epoch)
-                    self.writer.add_scalar('train/dice_coefficient', 1-loss_, epoch)
+                    self.writer.add_scalar('train/dice_loss', np.nanmean(loss_epoch), epoch)
+                    self.writer.add_scalar('train/dice_coefficient', 1-np.nanmean(loss_epoch), epoch)
                     print('Epoch #{}: Mean Dice Loss: {}'.format(epoch, loss_log[epoch]))
                 if epoch % self.val_interval == 0:
                     dice_epoch = []
@@ -283,10 +283,12 @@ class Trainer(nn.Module):
                             
                             dice_epoch.append(1 - dice_metric.item())
                         dice_log[int(epoch//self.val_interval)] = np.nanmean(dice_epoch)
+
                         if self.lr_schedule == 'reduce_on_plateau':
                             self.lr_schedule.step(1-np.nanmean(dice_epoch)) # monitors validation loss 
-                        self.writer.add_scalar('val/dice_loss', dice_metric, epoch)
-                        self.writer.add_scalar('val/dice_coefficient', 1-dice_metric, epoch)
+                        self.writer.add_scalar('val/dice_loss', np.nanmean(dice_epoch), epoch)
+                        self.writer.add_scalar('val/dice_coefficient', 1-np.nanmean(dice_epoch), epoch)
+
 
                         ## show some (e.g.,10) example images in tensorboard
                         ex_num = 10
@@ -375,13 +377,21 @@ class Trainer(nn.Module):
             oname = date.today()
             oname = oname.strftime("%b-%d-%Y")
 
+        path_ = path.join(self.outdir,\
+                            'testing/plots')
+        if not path.exists(path_):
+            makedirs(path_)
+
         test = DataLoader(test_data, 1, shuffle=False)
         dice_log = []
         prec_log = []
         rec_log = []
         precision = Precision()
         recall = Recall()
-        self.model.eval()
+        if self.ensemble:
+            self.model = [model.eval() for model in self.model]
+        else:
+            self.model.eval()
         with torch.no_grad():
             for i, (input, label) in enumerate(test):
                 input, label = input.to(self.device), label.to(self.device)
@@ -404,7 +414,7 @@ class Trainer(nn.Module):
                     for aug in test_post:
                         pred = aug(pred)
                 dice_metric = self.metric(pred, label)
-                dice_log.append(1-dice_metric.item().detach().cpu().numpy())
+                dice_log.append(1-dice_metric.detach().cpu().numpy())
                 prec_log.append(precision(pred, label).detach().cpu().numpy())
                 rec_log.append(recall(pred, label).detach().cpu().numpy())
 
@@ -416,54 +426,45 @@ class Trainer(nn.Module):
                 pred_img = np.squeeze(pred_img)
                 label_img = np.squeeze(label_img)
 
-                if overlap=='contour':
-                    input_img -= input_img.min()
-                    input_img *= 1.0/input_img.max()
-                    label_img = laplace(label_img)
-                    pred_img = laplace(pred_img)
-                    label_img = (label_img != 0)
-                    pred_img = (pred_img != 0)
-                    label_img = np.ma.masked_where(label_img == 0, label_img)
-                    pred_img = np.ma.masked_where(pred_img == 0, pred_img)
-                    plt.figure()
-                    plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
-                    plt.axis('off')
-                    plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1)
-                    plt.axis('off')
-                    plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1)
-                    plt.axis('off')
-                elif overlap=='mask':
-                    input_img -= input_img.min()
-                    input_img *= 1.0/input_img.max()
-                    label_img = np.ma.masked_where(label_img == 0, label_img)
-                    pred_img = np.ma.masked_where(pred_img == 0, pred_img)
-                    plt.figure()
-                    plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
-                    plt.axis('off')
-                    plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1)
-                    plt.axis('off')
-                    plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1)
-                    plt.axis('off')
-                else:
-                    plt.figure()
-                    plt.subplot(131)
-                    plt.imshow(input_img, cmap='gray')
-                    plt.axis('off')
-                    plt.title('Image')
-                    plt.subplot(132)
-                    plt.imshow(pred_img, cmap='gray', vmin=0, vmax=1)
-                    plt.axis('off')
-                    plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
-                    plt.subplot(133)
-                    plt.imshow(label_img, cmap='gray', vmin=0, vmax=1)
-                    plt.axis('off')
-                    plt.title('Ground Truth')
+                plt.figure()
+                plt.imshow(pred_img, cmap='gray', vmin=0, vmax=1)
+                plt.axis('off')
+                plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
+                plt.savefig(path.join(path_, 'pred_{}_{}.png'.format(i, oname)))
 
-                path_ = path.join(self.outdir,\
-                                'testing/plots')
-                if not path.exists(path_):
-                    makedirs(path_)
-                plt.savefig(path.join(path_, 'pred{}_{}.png'.format(i, oname)))
+                if overlap:
+                    if overlap=='contour':
+                        input_img -= input_img.min()
+                        input_img *= 1.0/input_img.max()
+                        label_img = laplace(label_img)
+                        pred_img = laplace(pred_img)
+                        label_img = (label_img != 0)
+                        pred_img = (pred_img != 0)
+                        label_img = np.ma.masked_where(label_img == 0, label_img)
+                        pred_img = np.ma.masked_where(pred_img == 0, pred_img)
+                        plt.figure()
+                        plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
+                        plt.axis('off')
+                        plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1)
+                        plt.axis('off')
+                        plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1)
+                        plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
+                        plt.axis('off')
+                    elif overlap=='mask':
+                        input_img -= input_img.min()
+                        input_img *= 1.0/input_img.max()
+                        label_img = np.ma.masked_where(label_img == 0, label_img)
+                        pred_img = np.ma.masked_where(pred_img == 0, pred_img)
+                        plt.figure()
+                        plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
+                        plt.axis('off')
+                        plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.3)
+                        plt.axis('off')
+                        plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.3)
+                        plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
+                        plt.axis('off')
+                        
+                    plt.savefig(path.join(path_, 'pred_overlap_{}_{}.png'.format(i, oname)))
 
         dice_log = np.array(dice_log, dtype=float)
         prec_log = np.array(prec_log, dtype=float)
@@ -606,8 +607,8 @@ class ClassTrainer(nn.Module):
                         loss_epoch.append(loss_.item())
                     loss_log_ensemble[i,epoch] = np.nanmean(loss_epoch)
                     if epoch % self.print_interval == 0:
-                        self.writer.add_scalar('class_train/dice_loss_ensemble', loss_, epoch) 
-                        self.writer.add_scalar('class_train/dice_coefficient_ensemble', 1-loss_, epoch)
+                        self.writer.add_scalar('class_train/dice_loss_ensemble', np.nanmean(loss_epoch), epoch) 
+                        self.writer.add_scalar('class_train/dice_coefficient_ensemble', 1-np.nanmean(loss_epoch), epoch)
                         print('Epoch #{}: Mean acc Loss: {}'.format(epoch, loss_log_ensemble[i,epoch]))
                     if epoch % self.val_interval == 0:
                         acc_epoch = []
@@ -631,8 +632,8 @@ class ClassTrainer(nn.Module):
                                 acc_metric = self.metric(pred, label)
                                 acc_epoch.append(acc_metric)
                             acc_log_ensemble[i,int(epoch//self.val_interval)] = np.nanmean(acc_epoch)
-                            self.writer.add_scalar('class_val/dice_loss_ensemble', acc_metric, epoch) 
-                            self.writer.add_scalar('class_val/dice_coefficient_ensemble', 1-acc_metric, epoch)
+                            self.writer.add_scalar('class_val/dice_loss_ensemble', np.nanmean(acc_epoch), epoch) 
+                            self.writer.add_scalar('class_val/dice_coefficient_ensemble', 1-np.nanmean(acc_epoch), epoch)
                         if epoch >= self.val_interval:
                             if acc_log_ensemble[i,int(epoch//self.val_interval)] > acc_max:
                                 early_ = 0
@@ -683,8 +684,8 @@ class ClassTrainer(nn.Module):
                     loss_epoch.append(loss_.item())
                 loss_log[epoch] = np.nanmean(loss_epoch)
                 if epoch % self.print_interval == 0:
-                    self.writer.add_scalar('class_train/dice_loss', loss_, epoch) 
-                    self.writer.add_scalar('class_train/dice_coefficient', 1-loss_, epoch)
+                    self.writer.add_scalar('class_train/dice_loss', np.nanmean(loss_epoch), epoch) 
+                    self.writer.add_scalar('class_train/dice_coefficient', 1-np.nanmean(loss_epoch), epoch)
                     print('Epoch #{}: Mean acc Loss: {}'.format(epoch, loss_log[epoch]))
                 if epoch % self.val_interval == 0:
                     acc_epoch = []
@@ -708,8 +709,8 @@ class ClassTrainer(nn.Module):
                             acc_metric = self.metric(pred, label)
                             acc_epoch.append(acc_metric)
                         acc_log[int(epoch//self.val_interval)] = np.nanmean(acc_epoch)
-                        self.writer.add_scalar('class_val/dice_loss', acc_metric, epoch) 
-                        self.writer.add_scalar('class_val/dice_coefficient', 1-acc_metric, epoch)
+                        self.writer.add_scalar('class_val/dice_loss', np.nanmean(acc_epoch), epoch) 
+                        self.writer.add_scalar('class_val/dice_coefficient', 1-np.nanmean(acc_epoch), epoch)
                     if epoch % self.print_interval == 0:
                         print('Mean Validation acc: {}'.format(acc_log[int(epoch//self.val_interval)]))
                     if epoch >= self.val_interval:

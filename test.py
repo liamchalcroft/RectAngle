@@ -58,7 +58,7 @@ parser.add_argument('--classifier',
                     metavar='classifier',
                     type=bool,
                     action='store',
-                    default=True,
+                    default=False,
                     help='Use of classifier for pre-screening. If selected will train without and then perform test without + with.')
 
 parser.add_argument('--classweights',
@@ -66,7 +66,7 @@ parser.add_argument('--classweights',
                     metavar='classweights',
                     type=str,
                     action='store',
-                    default=True,
+                    default=None,
                     help='Path to trained weights for classifier.')
 
 parser.add_argument('--threshold',
@@ -91,7 +91,10 @@ args = parser.parse_args()
 if args.ensemble:
     ensemble = int(args.ensemble)
 else:
-    ensemble = None
+    if args.weights:
+        ensemble=int(len(args.weights))
+    else:
+        ensemble = 1
 
 ## run training
 import rectangle as rect
@@ -107,21 +110,22 @@ if args.seed:
     random.seed(seed)
     np.random.seed(seed)
 
-model = [rect.model.networks.UNet(n_layers=int(args.depth), device=device,
-                                    gate=args.gate) for e in int(args.ensemble)]
-
-for n, m in enumerate(model):
-    m.load_state_dict(torch.load(args.weights[n]))
-
-class_model = rect.model.networks.MakeDenseNet(freeze_weights=False).to(device)
-
-class_model.load_state_dict(torch.load(args.classweights))
-
 if torch.cuda.is_available():
     device = torch.device('cuda')
     torch.backends.cudnn.benchmark = True
 else:
     device = torch.device('cpu')
+
+model = [rect.model.networks.UNet(n_layers=int(args.depth), device=device,
+                                    gate=args.gate) for e in range(ensemble)]
+
+for n, m in enumerate(model):
+    m.load_state_dict(torch.load(args.weights[n], map_location=device))
+
+if args.classifier==True:
+    class_model = rect.model.networks.MakeDenseNet(freeze_weights=False).to(device)
+if args.classweights:
+    class_model.load_state_dict(torch.load(args.classweights))
 
 f_test = h5py.File(args.test, 'r')
 if args.classifier:
@@ -131,5 +135,5 @@ else:
 
 trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir, device=device)
 
-trainer.test(test_data, test_pre=[rect.utils.transforms.z_score()], 
-            test_post=[rect.utils.transforms.Binary(), rect.utils.transforms.KeepLargestComponent()])
+trainer.test(test_data, test_pre=[rect.utils.transforms.z_score()], oname='run', 
+            test_post=[rect.utils.transforms.Binary()], overlap='mask')
