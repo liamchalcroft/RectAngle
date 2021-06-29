@@ -113,9 +113,11 @@ model = [rect.model.networks.UNet(n_layers=int(args.depth), device=device,
 for n, m in enumerate(model):
     m.load_state_dict(torch.load(args.weights[n]))
 
-class_model = rect.model.networks.MakeDenseNet(freeze_weights=False).to(device)
 
-class_model.load_state_dict(torch.load(args.classweights))
+if args.classifier:
+    class_model = rect.model.networks.MakeDenseNet(freeze_weights=False).to(device)
+if args.classweights:
+    class_model.load_state_dict(torch.load(args.classweights))
 
 if torch.cuda.is_available():
     device = torch.device('cuda')
@@ -131,5 +133,5 @@ else:
 
 trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir, device=device)
 
-trainer.test(test_data, test_pre=[rect.utils.transforms.z_score()], 
-            test_post=[rect.utils.transforms.Binary(), rect.utils.transforms.KeepLargestComponent()])
+trainer.test(test_data, test_pre=[rect.utils.transforms.z_score()], oname='run', 
+            test_post=[rect.utils.transforms.Binary()], overlap='mask')
