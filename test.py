@@ -66,7 +66,7 @@ parser.add_argument('--classweights',
                     metavar='classweights',
                     type=str,
                     action='store',
-                    default=True,
+                    default=None,
                     help='Path to trained weights for classifier.')
 
 parser.add_argument('--threshold',
@@ -122,7 +122,7 @@ model = [rect.model.networks.UNet(n_layers=int(args.depth), device=device,
 for n, m in enumerate(model):
     m.load_state_dict(torch.load(args.weights[n], map_location=device))
 
-if args.classifier:
+if args.classifier==True:
     class_model = rect.model.networks.MakeDenseNet(freeze_weights=False).to(device)
 if args.classweights:
     class_model.load_state_dict(torch.load(args.classweights))
