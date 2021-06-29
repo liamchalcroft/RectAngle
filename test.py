@@ -58,7 +58,7 @@ parser.add_argument('--classifier',
                     metavar='classifier',
                     type=bool,
                     action='store',
-                    default=True,
+                    default=False,
                     help='Use of classifier for pre-screening. If selected will train without and then perform test without + with.')
 
 parser.add_argument('--classweights',
