@@ -381,7 +381,10 @@ class Trainer(nn.Module):
         rec_log = []
         precision = Precision()
         recall = Recall()
-        self.model.eval()
+        if self.ensemble:
+            self.model = [model.eval() for model in self.model]
+        else:
+            self.model.eval()
         with torch.no_grad():
             for i, (input, label) in enumerate(test):
                 input, label = input.to(self.device), label.to(self.device)
