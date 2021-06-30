@@ -136,4 +136,4 @@ else:
 trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir, device=device)
 
 trainer.test(test_data, test_pre=[rect.utils.transforms.z_score()], oname='run', 
-            test_post=[rect.utils.transforms.Binary()], overlap='mask')
+            test_post=[rect.utils.transforms.Binary()], overlap='contour')

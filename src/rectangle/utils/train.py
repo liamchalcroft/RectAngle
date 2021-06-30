@@ -386,6 +386,8 @@ class Trainer(nn.Module):
         dice_log = []
         prec_log = []
         rec_log = []
+        neg_log = []
+        pos_log = []
         precision = Precision()
         recall = Recall()
         if self.ensemble:
@@ -413,74 +415,83 @@ class Trainer(nn.Module):
                 if test_post:
                     for aug in test_post:
                         pred = aug(pred)
-                dice_metric = self.metric(pred, label)
-                dice_log.append(1-dice_metric.detach().cpu().numpy())
-                prec_log.append(precision(pred, label).detach().cpu().numpy())
-                rec_log.append(recall(pred, label).detach().cpu().numpy())
 
-                input_img = input.detach().cpu().numpy()
-                pred_img = pred.detach().cpu().numpy()
-                label_img = label.detach().cpu().numpy()
+                if pred.sum() == 0:
+                    if label.sum() == 0:
+                        neg_log.append(1.)
+                    else:
+                        neg_log.append(0.)
+                else:
+                    if label.sum() == 0:
+                        pos_log.append(0.)
+                    else:
+                        pos_log.append(1.)
+                    dice_metric = self.metric(pred, label)
+                    dice_log.append(1-dice_metric.detach().cpu().numpy())
+                    prec_log.append(precision(pred, label).detach().cpu().numpy())
+                    rec_log.append(recall(pred, label).detach().cpu().numpy())
 
-                input_img = np.squeeze(input_img)
-                pred_img = np.squeeze(pred_img)
-                label_img = np.squeeze(label_img)
+                    input_img = input.detach().cpu().numpy()
+                    pred_img = pred.detach().cpu().numpy()
+                    label_img = label.detach().cpu().numpy()
 
-                if i % 100==0:
-                    plt.figure()
-                    plt.imshow(pred_img, cmap='gray', vmin=0, vmax=1)
-                    plt.axis('off')
-                    plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
-                    plt.savefig(path.join(path_, 'pred_{}_{}.png'.format(i, oname)))
+                    input_img = np.squeeze(input_img)
+                    pred_img = np.squeeze(pred_img)
+                    label_img = np.squeeze(label_img)
 
-                    if overlap:
-                        if overlap=='contour':
-                            input_img -= input_img.min()
-                            input_img *= 1.0/input_img.max()
-                            label_img = laplace(label_img)
-                            pred_img = laplace(pred_img)
-                            label_img = (label_img != 0)
-                            pred_img = (pred_img != 0)
-                            label_img = np.ma.masked_where(label_img == 0, label_img)
-                            pred_img = np.ma.masked_where(pred_img == 0, pred_img)
-                            plt.figure()
-                            plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
-                            plt.axis('off')
-                            plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1)
-                            plt.axis('off')
-                            plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1)
-                            plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
-                            plt.axis('off')
-                        elif overlap=='mask':
-                            input_img -= input_img.min()
-                            input_img *= 1.0/input_img.max()
-                            label_img = np.ma.masked_where(label_img == 0, label_img)
-                            pred_img = np.ma.masked_where(pred_img == 0, pred_img)
-                            plt.figure()
-                            plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
-                            plt.axis('off')
-                            plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.3)
-                            plt.axis('off')
-                            plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.3)
-                            plt.title('Prediction (DSC={:.2f})'.format(dice_log[i]))
-                            plt.axis('off')
-                            
-                        plt.savefig(path.join(path_, 'pred_overlap_{}_{}.png'.format(i, oname)))
+                    if i % 50==0:
+                        plt.figure()
+                        plt.imshow(pred_img, cmap='gray', vmin=0, vmax=1)
+                        plt.axis('off')
+                        plt.title('Prediction (DSC={:.2f})'.format(dice_log[-1]))
+                        plt.savefig(path.join(path_, 'pred_{}_{}.png'.format(i, oname)))
+
+                        if overlap:
+                            if overlap=='contour':
+                                input_img -= input_img.min()
+                                input_img *= 1.0/input_img.max()
+                                # label_img = np.ma.masked_where(label_img == 0, label_img)
+                                # pred_img = np.ma.masked_where(pred_img == 0, pred_img)
+                                plt.figure()
+                                plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
+                                plt.axis('off')
+                                plt.contour(label_img, cmap='Greens', linewidths=1)
+                                plt.axis('off')
+                                plt.contour(pred_img, cmap='Reds', linewidths=1)
+                                plt.title('Prediction (DSC={:.2f})'.format(dice_log[-1]))
+                                plt.axis('off')
+                            elif overlap=='mask':
+                                input_img -= input_img.min()
+                                input_img *= 1.0/input_img.max()
+                                label_img = np.ma.masked_where(label_img == 0, label_img)
+                                pred_img = np.ma.masked_where(pred_img == 0, pred_img)
+                                plt.figure()
+                                plt.imshow(input_img, cmap='gray', vmin=0, vmax=1)
+                                plt.axis('off')
+                                plt.imshow(label_img, cmap='Greens', vmin=0, vmax=1, alpha=0.3)
+                                plt.axis('off')
+                                plt.imshow(pred_img, cmap='Reds', vmin=0, vmax=1, alpha=0.3)
+                                plt.title('Prediction (DSC={:.2f})'.format(dice_log[-1]))
+                                plt.axis('off')
+                                
+                            plt.savefig(path.join(path_, 'pred_overlap_{}_{}.png'.format(i, oname)))
 
         dice_log = np.array(dice_log, dtype=float)
         prec_log = np.array(prec_log, dtype=float)
         rec_log = np.array(rec_log, dtype=float)
+        neg_log = np.array(neg_log, dtype=float)
+        pos_log = np.array(pos_log, dtype=float)
 
         plt.figure()
-        plt.scatter(rec_log, prec_log)
-        plt.plot([0,0.5,1], [0.5,0.5,0.5], '--')
+        plt.scatter(rec_log, prec_log, alpha=0.4)
+        # plt.plot([0,0.5,1], [0.5,0.5,0.5], '--')
         plt.xlabel('Recall')
         plt.ylabel('Precision')
         plt.title('AUC = {:.2f}'.format(np.sum(prec_log * rec_log)/np.size(prec_log)))
         plt.savefig(path.join(path_, 'prec_rec_{}'.format(oname)))
 
 
-        print('Mean Dice score: {:.2f}±{:.3f}, Mean Precision: {:.2f}±{:.3f}, Mean Recall: {:.2f}±{:.3f}'.format(np.mean(dice_log), np.std(dice_log), np.mean(prec_log), np.std(prec_log), np.mean(rec_log), np.std(rec_log)))
+        print('Mean Dice score: {:.2f}±{:.3f}, Mean Precision: {:.2f}±{:.3f}, Mean Recall: {:.2f}±{:.3f} \n TP Rate: {:.2f}±{:.3f}, TN Rate: {:.2f}±{:.3f}'.format(np.mean(dice_log), np.std(dice_log), np.mean(prec_log), np.std(prec_log), np.mean(rec_log), np.std(rec_log), np.mean(pos_log), np.std(pos_log), np.mean(neg_log), np.std(neg_log)))
         path_ = path.join(self.outdir,\
                                 'testing/table')
         if not path.exists(path_):
@@ -491,6 +502,10 @@ class Trainer(nn.Module):
                 prec_log, delimiter=',')
         np.savetxt(path.join(path_, 'recall_{}.csv'.format(oname)),\
                 rec_log, delimiter=',')
+        np.savetxt(path.join(path_, 'negative_{}.csv'.format(oname)),\
+                neg_log, delimiter=',')
+        np.savetxt(path.join(path_, 'positive_{}.csv'.format(oname)),\
+                pos_log, delimiter=',')
 
         print('Testing complete')
 
