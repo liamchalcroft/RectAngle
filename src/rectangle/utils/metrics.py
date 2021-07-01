@@ -20,7 +20,7 @@ class WeightedBCE(nn.Module):
     else:
         loss = targets * torch.log(inputs) + (1 - targets) * torch.log(1 - inputs)
 
-    return torch.neg(torch.mean(loss))
+    return loss
 
 
 class DiceLoss(nn.Module):
