@@ -129,7 +129,7 @@ if args.classweights:
 
 f_test = h5py.File(args.test, 'r')
 if args.classifier:
-    train_data = rect.utils.io.PreScreenLoader(class_model.eval(), f_test, label=args.label, threshold=float(args.thresh))
+    test_data = rect.utils.io.PreScreenLoader(class_model.eval(), f_test, label=args.label, threshold=float(args.thresh))
 else:
     test_data = rect.utils.io.H5DataLoader(f_test, label='vote')
 
