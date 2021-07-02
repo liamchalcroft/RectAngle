@@ -28,3 +28,5 @@ Following this, training/inference may be performed using objects in the *train*
 To familiarise with the code used, an interactive notebook used for experiments in the associated report is available below. Please note that data used is proprietary and so has been withheld from the published repository.
 
 <a href="https://colab.research.google.com/github/liamchalcroft/RectAngle/blob/main/demo.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+(The code relevant to different label sampling methods is in sub-branch: label_method.)
