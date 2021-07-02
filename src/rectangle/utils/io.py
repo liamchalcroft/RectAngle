@@ -25,16 +25,16 @@ def plot_example(frame, labels, gt_method=None, savefig=None):
     plt.imshow(frame, cmap='gray')
     if type(labels) == list:
       for i, label in enumerate(labels):
-        plt.contour(label, colors=colors[i], linewidths=1)
+        plt.contour(label, colors=colors[i], linewidths=2)
     else:
-      plt.contour(label, colors=colors[0], linewidths=1)
+      plt.contour(label, colors=colors[0], linewidths=2)
     plt.tight_layout()
     plt.axis('off')      
 
     # make legend
     patches = [ mpatches.Patch(color=colors[i], label=legend_names[i]) for i in range(len(labels) ) ]
     # put those patched as legend-handles into the legend
-    plt.legend(handles=patches, bbox_to_anchor=(0.97, 0.97), loc=1, borderaxespad=0., fontsize=20)
+    plt.legend(handles=patches, bbox_to_anchor=(0.97, 0.97), loc=1, borderaxespad=0., fontsize=30)
 
     if savefig is None:
       plt.show()
