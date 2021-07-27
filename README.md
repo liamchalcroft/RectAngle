@@ -1,9 +1,9 @@
 # RectAngle
 Segmentation and classification tool for trans-rectal B-mode ultrasound images.
 
-*Submitted as coursework for MPHY0041: Machine Learning in Medical Imaging.*
+*Submitted as part of the ASMUS2021 Conference for the paper 'Development and evaluation of intraoperative ultrasound segmentation with negative image frames and multiple observer labels'.*
 
-This package contains PyTorch-based implementations of a U-Net based segmentation model, and a DenseNet-based classification model, for the simultaneous detection and segmentation of prostate in rectal b-mode ultrasound images.
+This package contains a PyTorch-based implementation of a U-Net based segmentation model, and a DenseNet-based classification model, for the detection and segmentation of prostate in rectal b-mode ultrasound images.
 
 ## Installation
 
