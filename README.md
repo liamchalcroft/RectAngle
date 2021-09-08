@@ -1,9 +1,9 @@
 # RectAngle
 Segmentation and classification tool for trans-rectal B-mode ultrasound images.
 
-*Submitted as coursework for MPHY0041: Machine Learning in Medical Imaging.*
+*Submitted as part of the ASMUS2021 Conference for the paper 'Development and evaluation of intraoperative ultrasound segmentation with negative image frames and multiple observer labels'.*
 
-This package contains PyTorch-based implementations of a U-Net based segmentation model, and a DenseNet-based classification model, for the simultaneous detection and segmentation of prostate in rectal b-mode ultrasound images.
+This package contains a PyTorch-based implementation of a U-Net based segmentation model, and a DenseNet-based classification model, for the detection and segmentation of prostate in rectal b-mode ultrasound images.
 
 ## Installation
 
@@ -25,6 +25,8 @@ Once this is activated, the package may be installed using the *setup.py* file:
 
 Following this, training/inference may be performed using objects in the *train* module.
 
-To familiarise with the code used, an interactive notebook used for experiments in the associated report is available below. Please note that data used is proprietary and so has been withheld from the published repository.
+To familiarise yourself with the code used, an interactive notebook used for experiments in the associated report is available below. Please note that data used is proprietary and so has been withheld from the published repository.
 
 <a href="https://colab.research.google.com/github/liamchalcroft/RectAngle/blob/main/demo.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
+(The code relevant to different label sampling methods is in sub-branch: label_method.)

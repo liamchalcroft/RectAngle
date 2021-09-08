@@ -32,8 +32,8 @@ class z_score(object):
     batch_ = image.shape[0]
     for batch_iter_ in range(batch_):
       image[batch_iter_,...] = (image[batch_iter_,...] - \
-                                torch.mean(image[batch_iter_,...]) / \
-                                torch.std(image[batch_iter_,...]))
+                                torch.mean(image[batch_iter_,...]))/ \
+                                torch.std(image[batch_iter_,...])
     return image
 
 
@@ -336,6 +336,7 @@ class Binary(object):
     super().__init__()
     self.threshold = threshold
 
+  # TODO: check for torch auto binarising
   def __call__(self, image):
     return (image > self.threshold).int()
 

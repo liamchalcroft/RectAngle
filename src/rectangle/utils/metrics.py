@@ -3,6 +3,26 @@ from torch import nn
 
 # Loss function
 
+class WeightedBCE(nn.Module):
+  def __init__(self, weights=None):
+      super().__init__()
+      self.weights = weights
+      
+  def forward(self, inputs, targets):
+    inputs = inputs.view(-1).float()
+    targets = targets.view(-1).float()
+
+    if self.weights is not None:
+        assert len(self.weights) == 2
+
+        loss = weights[1] * (targets * torch.log(inputs)) + \
+        weights[0] * ((1 - targets) * torch.log(1 - inputs))
+    else:
+        loss = targets * torch.log(inputs) + (1 - targets) * torch.log(1 - inputs)
+
+    return loss
+
+
 class DiceLoss(nn.Module):
   """ Loss function based on Dice-Sorensen Coefficient (L = 1 - Dice)
   Input arguments:
@@ -29,7 +49,7 @@ class DiceLoss(nn.Module):
     # Seems to perform very well without binary - soft dice?
 
     if not self.soft:
-      inputs = BinaryDice(inputs, self.threshold)
+      inputs = self.BinaryDice(inputs, self.threshold)
 
     inputs = inputs.view(-1).float()
     targets = targets.view(-1).float()

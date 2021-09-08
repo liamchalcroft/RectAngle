@@ -1,8 +1,6 @@
 import os
 import argparse
 
-from rectangle.utils.transforms import Affine
-
 parser = argparse.ArgumentParser(prog='train',
                                 description="Train RectAngle model. See list of available arguments for more info.")
 
@@ -22,13 +20,13 @@ parser.add_argument('--val',
                     default=None,
                     help='Path to validation data.')
 
-parser.add_argument('--label',
-                    '--l',
-                    metavar='label',
+parser.add_argument('--test',
+                    '--te',
+                    metavar='test',
                     type=str,
                     action='store',
-                    default='random',
-                    help="Label sampling strategy. Should be string of {'random', 'vote', 'mean'}.")
+                    default=None,
+                    help='Path to test data.')
 
 parser.add_argument('--ensemble',
                     '--en',
@@ -38,21 +36,13 @@ parser.add_argument('--ensemble',
                     default=None,
                     help='Number of ensembled models.')
 
-parser.add_argument('--gate',
-                    '--g',
-                    metavar='gate',
-                    type=str,
+parser.add_argument('--freeze',
+                    '--f',
+                    metavar='freeze',
+                    type=bool,
                     action='store',
-                    default=None,
-                    help='(Optional) Attention gating.')
-
-parser.add_argument('--lr_schedule',
-                    '--lrs',
-                    metavar='lr_schedule',
-                    type=str,
-                    action='store',
-                    default=None,
-                    help="Method for scheduling of learning rate. {None, 'lambda', 'exponential', 'reduce_on_plateau'}")
+                    default=False,
+                    help='Freeze CNN weights (pre-trained on ImageNet).')
 
 parser.add_argument('--odir',
                     '--o',
@@ -61,14 +51,6 @@ parser.add_argument('--odir',
                     action='store',
                     default='./',
                     help='Path to output folder.')
-
-parser.add_argument('--depth',
-                    '--d',
-                    metavar='depth',
-                    type=str,
-                    action='store',
-                    default='5',
-                    help='Depth of U-Net architecture used.')
 
 parser.add_argument('--epochs',
                     '--ep',
@@ -94,14 +76,6 @@ parser.add_argument('--seed',
                     default=None,
                     help='Random seed for training.')
 
-parser.add_argument('--earlystop',
-                    '--e',
-                    metavar='earlystop',
-                    type=str,
-                    action='store',
-                    default='10',
-                    help='Number of val steps with no improvement before stopping training early.')
-
 
 args = parser.parse_args()
 
@@ -118,9 +92,6 @@ import torch
 import random
 import numpy as np
 
-print("Code running")
-#os.environ["CUDA_VISIBLE_DEVICES"]="0"
-
 # set seeds for repeatable results
 if args.seed:
     seed = int(args.seed)
@@ -128,35 +99,33 @@ if args.seed:
     random.seed(seed)
     np.random.seed(seed)
 
-f_train = h5py.File(args.train, 'r')
-train_data = rect.utils.io.H5DataLoader(f_train, label=args.label)
-
 if torch.cuda.is_available():
     device = torch.device('cuda')
     torch.backends.cudnn.benchmark = True
-    print("Cuda available!")
 else:
     device = torch.device('cpu')
-    print("Using CPU!")
+
+f_train = h5py.File(args.train, 'r')
 
 if args.val:
     f_val = h5py.File(args.val, 'r')
-    val_data = rect.utils.io.H5DataLoader(f_val, label='vote')
 
-model = rect.model.networks.UNet(n_layers=int(args.depth), device=device,
-                                    gate=args.gate)
+if args.test:
+    f_test = h5py.File(args.test, 'r')
 
-trainer = rect.utils.train.Trainer(model, ensemble=ensemble, outdir=args.odir, device=device,
-                                    nb_epochs=int(args.epochs), lr_schedule=args.lr_schedule,
-                                    early_stop=int(args.earlystop))
-
-#Manually setting Affine Transforms
-AffineTransform = rect.utils.transforms.Affine(prob = 0.3, scale = (1,1), degrees = 5, shear = 0, translate = 0)
-
+class_train_data = rect.utils.io.ClassifyDataLoader_v2(f_train)
 if args.val:
-    trainer.train(train_data, val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), AffineTransform],
-                    val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
+    class_val_data = rect.utils.io.ClassifyDataLoader_v2(f_val)
 else:
-    trainer.train(train_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), AffineTransform], 
-                    val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
+    class_val_data = None
+if args.test:
+    class_test_data = rect.utils.io.ClassifyDataLoader_v2(f_test)
+else:
+    class_test_data = None
 
+class_model = rect.model.networks.MakeDenseNet(freeze_weights=args.freeze).to(device)
+class_trainer = rect.utils.train.ClassTrainer(class_model, outdir=os.path.join(args.odir),
+                                        ensemble=ensemble, nb_epochs=int(args.epochs), device=device)
+
+class_trainer.train(class_train_data, class_val_data, train_pre=[rect.utils.transforms.z_score(), rect.utils.transforms.Flip(), rect.utils.transforms.Affine()],
+                    val_pre=[rect.utils.transforms.z_score()], train_batch=int(args.batch))
